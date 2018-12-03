@@ -10,7 +10,7 @@ fn main() -> Result<()>{
 
     let mut claim_ids_set = HashSet::new();
 
-    for line in BufReader::new(File::open("src/bin/day_three_input.txt")?).lines() {
+    for line in BufReader::new(File::open("src/bin/day_3_input.txt")?).lines() {
         let split_vec = line.unwrap().split("@").collect::<Vec<&str>>().iter().map(|&x| x.to_owned()).collect::<Vec<String>>();
 
         claim_ids_set.insert(split_vec.get(0).unwrap().trim().to_string());
