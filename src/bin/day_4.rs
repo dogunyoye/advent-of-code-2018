@@ -12,10 +12,10 @@ fn main() -> Result<()>{
 
     let mut guard_log = Vec::new();
     let mut guards_sleep_map: HashMap<String, i64> = HashMap::new();
-    let mut hours_map: HashMap<i32, i32> = HashMap::new();
+    let mut minutes_map: HashMap<i32, i32> = HashMap::new();
 
     for i in 0..59 {
-        hours_map.insert(i, 0);
+        minutes_map.insert(i, 0);
     }
 
     for line in BufReader::new(File::open("src/bin/day_4_input.txt")?).lines() {
@@ -90,10 +90,10 @@ fn main() -> Result<()>{
             let guard_wakeup = &wake_up_time[3..5].parse::<i32>().unwrap();
 
             for i in *guard_sleep..*guard_wakeup {
-                let cloned_map = hours_map.clone();
+                let cloned_map = minutes_map.clone();
                 let count = cloned_map.get(&i);
                 let incremented = count.unwrap() + 1;
-                hours_map.insert(i, incremented);
+                minutes_map.insert(i, incremented);
             }
         }
     }
@@ -101,7 +101,7 @@ fn main() -> Result<()>{
     let mut most_frequent = 0;
     let mut minute_val = 0;
 
-    for (key, val) in hours_map.iter() {
+    for (key, val) in minutes_map.iter() {
         if val > &most_frequent {
             minute_val = *key;
             most_frequent = *val;
@@ -110,7 +110,7 @@ fn main() -> Result<()>{
 
     println!("Part 1 - Most frequent count: {} times, on minute {} from {}", most_frequent, minute_val, sleepiest_guard);
 
-    for val in hours_map.values_mut() {
+    for val in minutes_map.values_mut() {
         *val = 0;
     }
 
@@ -141,15 +141,15 @@ fn main() -> Result<()>{
                 let guard_wakeup: &i32 = &wake_up_time[3..5].parse::<i32>().unwrap();
 
                 for i in *guard_sleep..*guard_wakeup {
-                    let cloned_map = hours_map.clone();
+                    let cloned_map = minutes_map.clone();
                     let count = cloned_map.get(&i);
                     let incremented = count.unwrap() + 1;
-                    hours_map.insert(i, incremented);
+                    minutes_map.insert(i, incremented);
                 }
             }
         }
 
-        for (k, v) in hours_map.iter() {
+        for (k, v) in minutes_map.iter() {
             if v > &max {
                 minute = *k;
                 max = *v;
@@ -157,7 +157,7 @@ fn main() -> Result<()>{
             }
         }
 
-        for count in hours_map.values_mut() {
+        for count in minutes_map.values_mut() {
             *count = 0;
         }
     }
