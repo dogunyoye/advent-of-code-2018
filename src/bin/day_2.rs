@@ -44,13 +44,13 @@ fn main() -> Result<()> {
     let mut mismatch_index = 0;
     let mut found_pair = false;
 
-    for i in 0..lines_vec.len() - 1 {
+    for i in 0..lines_vec.len() {
         let curr_line = lines_vec.get(i).unwrap();
 
-        for j in i+1..lines_vec.len() - 1 {
+        for j in i+1..lines_vec.len() {
             let next_line = lines_vec.get(j).unwrap();
 
-            for k in 0..curr_line.len() - 1 {
+            for k in 0..curr_line.len() {
                 let c1 = curr_line.chars().nth(k).unwrap();
                 let c2 = next_line.chars().nth(k).unwrap();
 
