@@ -75,7 +75,7 @@ fn main() -> Result<()>{
                     grid[x][y] = Occupation { point: point.clone(), distance_from_point: manhattan_distance, can_be_occupied: true};
                 }
                 else if grid[x][y].distance_from_point == manhattan_distance {
-                    let equal_point = Point { name: "equal".to_string(), x: x, y: y};
+                    let equal_point = Point { name: "equal".to_string(), x: x as i32, y: y as i32};
                     grid[x][y] = Occupation { point: equal_point.clone(), distance_from_point: manhattan_distance, can_be_occupied: true};
                 }
             }
