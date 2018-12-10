@@ -8,7 +8,7 @@ fn main() -> Result<()>{
     let mut input_string: String = String::new();
     let mut result = VecDeque::new();
 
-    for line in BufReader::new(File::open("src/bin/day_5_input.txt")?).lines() {
+    for line in BufReader::new(File::open("src/data/day_5_input.txt")?).lines() {
         input_string = line?.to_string();
     }
 

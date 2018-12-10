@@ -7,7 +7,7 @@ use std::collections::HashSet;
 fn main() -> Result<()>{
     let mut frequency = 0;
 
-    for line in BufReader::new(File::open("src/bin/day_1_input.txt")?).lines() {
+    for line in BufReader::new(File::open("src/data/day_1_input.txt")?).lines() {
         frequency = frequency + line?.parse::<i32>().unwrap();
     }
 

@@ -71,7 +71,7 @@ fn main() -> Result<()>{
     let mut players: i32 = 0;
     let mut last_marble_points: i64 = 0;
 
-    for line in BufReader::new(File::open("src/bin/day_9_input.txt")?).lines() {
+    for line in BufReader::new(File::open("src/data/day_9_input.txt")?).lines() {
         let line = line.unwrap();
         let data = line.split(" ").collect::<Vec<&str>>();
 

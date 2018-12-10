@@ -28,7 +28,7 @@ fn main() -> Result<()>{
     let mut coords_map: HashMap<String, Point> = HashMap::new();
     let mut coords_area: HashMap<String, i32> = HashMap::new();
 
-    for line in BufReader::new(File::open("src/bin/day_6_input.txt")?).lines() {
+    for line in BufReader::new(File::open("src/data/day_6_input.txt")?).lines() {
         let coord_vec = line.unwrap().split(",").collect::<Vec<&str>>().iter().map(|&x| x.to_owned()).collect::<Vec<String>>();
         let name_of_point = format!("Point{}", i);
 

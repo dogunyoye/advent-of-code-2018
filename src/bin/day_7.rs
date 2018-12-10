@@ -35,7 +35,7 @@ fn main() -> Result<()>{
 
     let mut order: VecDeque<char> = VecDeque::new();
 
-    for line in BufReader::new(File::open("src/bin/day_7_input.txt")?).lines() {
+    for line in BufReader::new(File::open("src/data/day_7_input.txt")?).lines() {
         let line = line.unwrap();
         let mut chars = line.chars();
         let dependent: char = chars.nth(5).unwrap();

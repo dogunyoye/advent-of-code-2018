@@ -12,7 +12,7 @@ fn main() -> Result<()> {
 
     let mut lines_vec: Vec<String> = Vec::new();
 
-    for line in BufReader::new(File::open("src/bin/day_2_input.txt")?).lines() {
+    for line in BufReader::new(File::open("src/data/day_2_input.txt")?).lines() {
         let line = line.unwrap();
         let mut chars = line.chars();
 

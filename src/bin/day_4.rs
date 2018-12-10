@@ -18,7 +18,7 @@ fn main() -> Result<()>{
         minutes_map.insert(i, 0);
     }
 
-    for line in BufReader::new(File::open("src/bin/day_4_input.txt")?).lines() {
+    for line in BufReader::new(File::open("src/data/day_4_input.txt")?).lines() {
         guard_log.push(line?.to_string());
     }
 
