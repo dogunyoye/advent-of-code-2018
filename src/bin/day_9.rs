@@ -35,22 +35,22 @@ fn play_game(players: i32, number_of_marbles: i64) -> i64 {
             if num_to_play % 23 == 0 {
 
                 for _ in 0..7 {
-                    let popped = game.pop_back().unwrap();
-                    game.push_front(popped);
+                    let popped = game.pop_front().unwrap();
+                    game.push_back(popped);
                 }
 
-                let removed_marble = game.pop_back().unwrap();
-                let popped = game.pop_front().unwrap();
-                game.push_back(popped);
+                let removed_marble = game.pop_front().unwrap();
+                let popped = game.pop_back().unwrap();
+                game.push_front(popped);
 
                 if let Some(score) = players_score.get_mut(&i) {
                     *score += removed_marble + num_to_play;
                 }
             }
             else {
-                let popped = game.pop_front().unwrap();
-                game.push_back(popped);
-                game.push_back(num_to_play);
+                let popped = game.pop_back().unwrap();
+                game.push_front(popped);
+                game.push_front(num_to_play);
             }
 
             num_to_play += 1;
