@@ -7,7 +7,8 @@ use std::slice::Iter;
 #[derive(Clone, Debug)]
 struct Node {
     children: Vec<Node>,
-    metadata: Vec<usize>
+    metadata: Vec<usize>,
+    value: usize
 }
 
 fn build_tree(data: &Vec<usize>, iterator: &mut Iter<usize>, sum: &mut usize) -> Node {
@@ -27,7 +28,25 @@ fn build_tree(data: &Vec<usize>, iterator: &mut Iter<usize>, sum: &mut usize) ->
         *sum += value;
     }
 
-    Node { children: children, metadata: metadata }
+    Node { children: children, metadata: metadata, value: 0 }
+}
+
+fn calculate_value(node: &mut Node, sum: &mut usize) -> () {
+    if node.children.is_empty() {
+        node.value = node.metadata.iter().sum();
+        return;
+    }
+
+    for i in node.metadata.clone() {
+        if i == 0 {
+            continue;
+        }
+
+        if let Some(child) = node.children.get_mut(i-1) {
+            calculate_value(child, sum);
+            *sum += child.value;
+        }
+    }
 }
 
 fn main() -> Result<()>{
@@ -45,9 +64,14 @@ fn main() -> Result<()>{
     let mut iterator = tree_data.iter();
     let mut sum: usize = 0;
 
-    build_tree(&tree_data, &mut iterator, &mut sum);
+    let mut root = build_tree(&tree_data, &mut iterator, &mut sum);
 
     println!("Part 1: {}", sum);
+
+    let mut part2_sum: usize = 0;
+    calculate_value(&mut root, &mut part2_sum);
+
+    println!("Part 2: {}", part2_sum);
 
     Ok(())
 }
