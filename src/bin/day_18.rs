@@ -81,29 +81,32 @@ fn part1() -> () {
                     }
                 }
 
-                if current == '.' {
-                    if tree_count >= 3 {
-                        grid[x][y].next = '|';
-                    }
-                    else {
-                        grid[x][y].next = current;
-                    }
-                }
-                else if current == '|' {
-                    if lumberyard_count >= 3 {
-                        grid[x][y].next = '#';
-                    }
-                    else {
-                        grid[x][y].next = current;
-                    }
-                }
-                else {
-                    if lumberyard_count >= 1 && tree_count >= 1 {
-                        grid[x][y].next = current;
-                    }
-                    else {
-                        grid[x][y].next = '.'
-                    }
+                match current {
+                    '.' => {
+                        if tree_count >= 3 {
+                            grid[x][y].next = '|';
+                        }
+                        else {
+                            grid[x][y].next = current;
+                        }
+                    },
+                    '|' => {
+                        if lumberyard_count >= 3 {
+                            grid[x][y].next = '#';
+                        }
+                        else {
+                            grid[x][y].next = current;
+                        }
+                    },
+                    '#' => {
+                        if lumberyard_count >= 1 && tree_count >= 1 {
+                            grid[x][y].next = current;
+                        }
+                        else {
+                            grid[x][y].next = '.'
+                        }
+                    },
+                    _ => {}
                 }
             }
         }
@@ -186,29 +189,32 @@ fn part2() -> () {
                     }
                 }
 
-                if current == '.' {
-                    if tree_count >= 3 {
-                        grid[x][y].next = '|';
-                    }
-                    else {
-                        grid[x][y].next = current;
-                    }
-                }
-                else if current == '|' {
-                    if lumberyard_count >= 3 {
-                        grid[x][y].next = '#';
-                    }
-                    else {
-                        grid[x][y].next = current;
-                    }
-                }
-                else {
-                    if lumberyard_count >= 1 && tree_count >= 1 {
-                        grid[x][y].next = current;
-                    }
-                    else {
-                        grid[x][y].next = '.'
-                    }
+                match current {
+                    '.' => {
+                        if tree_count >= 3 {
+                            grid[x][y].next = '|';
+                        }
+                        else {
+                            grid[x][y].next = current;
+                        }
+                    },
+                    '|' => {
+                        if lumberyard_count >= 3 {
+                            grid[x][y].next = '#';
+                        }
+                        else {
+                            grid[x][y].next = current;
+                        }
+                    },
+                    '#' => {
+                        if lumberyard_count >= 1 && tree_count >= 1 {
+                            grid[x][y].next = current;
+                        }
+                        else {
+                            grid[x][y].next = '.'
+                        }
+                    },
+                    _ => {}
                 }
             }
         }
