@@ -16,7 +16,7 @@ struct Instruction {
 }
 
 fn part1(instructions: &HashMap<String, fn(Vec<usize>, usize, usize, usize) -> Vec<usize>>, program: &Vec<Instruction>, index: usize) {
-    let mut register: Vec<usize> = vec![0, 0, 0, 0, 0, 0];
+    let mut registers: Vec<usize> = vec![0, 0, 0, 0, 0, 0];
     let mut instruction_pointer: usize = 0;
     let instruction_pointer_index: usize = index;
 
@@ -26,7 +26,7 @@ fn part1(instructions: &HashMap<String, fn(Vec<usize>, usize, usize, usize) -> V
             break;
         }
 
-        register[instruction_pointer_index] = instruction_pointer;
+        registers[instruction_pointer_index] = instruction_pointer;
 
         // Inspecting my instructions input showed line 30 to be instruction
         // that would trigger the program halt: "eqrr 1 0 4", so the "hacky"
@@ -34,21 +34,25 @@ fn part1(instructions: &HashMap<String, fn(Vec<usize>, usize, usize, usize) -> V
         // the program reaches it, it will terminate.
         // Perhaps the more general solution would be to search the program input for all
         // register instructions involving register 0 and pre-emptively invoke them
-        register[0] = register[1];
+        registers[0] = registers[1];
         let operation: &Instruction = &program[instruction_pointer];
 
         let operation_fn: fn(Vec<usize>, usize, usize, usize) -> Vec<usize> = *instructions.get(&operation.instruction).unwrap();
-        register = operation_fn(register, operation.a, operation.b, operation.c);
+        registers = operation_fn(registers, operation.a, operation.b, operation.c);
 
-        instruction_pointer = register[instruction_pointer_index];
+        instruction_pointer = registers[instruction_pointer_index];
         instruction_pointer += 1;
     }
 
-    println!("Part 1: {}", register[0]);
+    println!("Part 1: {}", registers[0]);
 }
 
+// This takes a long time to return! Very likely can be optimised to not
+// iterate until we find a repeating number. Perhaps if we inspect the
+// program, we can find the general pattern and generate the values until
+// find a repeater
 fn part2(instructions: &HashMap<String, fn(Vec<usize>, usize, usize, usize) -> Vec<usize>>, program: &Vec<Instruction>, index: usize) {
-    let mut register: Vec<usize> = vec![0, 0, 0, 0, 0, 0];
+    let mut registers: Vec<usize> = vec![0, 0, 0, 0, 0, 0];
     let mut instruction_pointer: usize = 0;
     let instruction_pointer_index: usize = index;
     let mut last: usize = 0;
@@ -61,22 +65,22 @@ fn part2(instructions: &HashMap<String, fn(Vec<usize>, usize, usize, usize) -> V
             break;
         }
 
-        register[instruction_pointer_index] = instruction_pointer;
+        registers[instruction_pointer_index] = instruction_pointer;
         let operation: &Instruction = &program[instruction_pointer];
 
         let operation_fn: fn(Vec<usize>, usize, usize, usize) -> Vec<usize> = *instructions.get(&operation.instruction).unwrap();
-        register = operation_fn(register, operation.a, operation.b, operation.c);
+        registers = operation_fn(registers, operation.a, operation.b, operation.c);
 
-        instruction_pointer = register[instruction_pointer_index];
+        instruction_pointer = registers[instruction_pointer_index];
         instruction_pointer += 1;
 
         if instruction_pointer == 28 {
-            if values.get(&register[1]).is_some() {
+            if values.get(&registers[1]).is_some() {
                 break;
             }
 
-            values.insert(register[1]);
-            last = register[1];
+            values.insert(registers[1]);
+            last = registers[1];
         }
     }
 
