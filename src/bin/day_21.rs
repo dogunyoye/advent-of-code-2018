@@ -9,13 +9,13 @@ use std::collections::HashSet;
 
 #[derive(Debug, Clone)]
 struct Instruction {
-    instruction: String,
+    operation: String,
     a: usize,
     b: usize,
     c: usize
 }
 
-fn part1(instructions: &HashMap<String, fn(Vec<usize>, usize, usize, usize) -> Vec<usize>>, program: &Vec<Instruction>, index: usize) {
+fn part1(operations: &HashMap<String, fn(Vec<usize>, usize, usize, usize) -> Vec<usize>>, program: &Vec<Instruction>, index: usize) {
     let mut registers: Vec<usize> = vec![0, 0, 0, 0, 0, 0];
     let mut instruction_pointer: usize = 0;
     let instruction_pointer_index: usize = index;
@@ -35,10 +35,10 @@ fn part1(instructions: &HashMap<String, fn(Vec<usize>, usize, usize, usize) -> V
         // Perhaps the more general solution would be to search the program input for all
         // register instructions involving register 0 and pre-emptively invoke them
         registers[0] = registers[1];
-        let operation: &Instruction = &program[instruction_pointer];
+        let instruction: &Instruction = &program[instruction_pointer];
 
-        let operation_fn: fn(Vec<usize>, usize, usize, usize) -> Vec<usize> = *instructions.get(&operation.instruction).unwrap();
-        registers = operation_fn(registers, operation.a, operation.b, operation.c);
+        let operation_fn: fn(Vec<usize>, usize, usize, usize) -> Vec<usize> = *operations.get(&instruction.operation).unwrap();
+        registers = operation_fn(registers, instruction.a, instruction.b, instruction.c);
 
         instruction_pointer = registers[instruction_pointer_index];
         instruction_pointer += 1;
@@ -51,7 +51,7 @@ fn part1(instructions: &HashMap<String, fn(Vec<usize>, usize, usize, usize) -> V
 // iterate until we find a repeating number. Perhaps if we inspect the
 // program, we can find the general pattern and generate the values until
 // find a repeater
-fn part2(instructions: &HashMap<String, fn(Vec<usize>, usize, usize, usize) -> Vec<usize>>, program: &Vec<Instruction>, index: usize) {
+fn part2(operations: &HashMap<String, fn(Vec<usize>, usize, usize, usize) -> Vec<usize>>, program: &Vec<Instruction>, index: usize) {
     let mut registers: Vec<usize> = vec![0, 0, 0, 0, 0, 0];
     let mut instruction_pointer: usize = 0;
     let instruction_pointer_index: usize = index;
@@ -66,10 +66,10 @@ fn part2(instructions: &HashMap<String, fn(Vec<usize>, usize, usize, usize) -> V
         }
 
         registers[instruction_pointer_index] = instruction_pointer;
-        let operation: &Instruction = &program[instruction_pointer];
+        let instruction: &Instruction = &program[instruction_pointer];
 
-        let operation_fn: fn(Vec<usize>, usize, usize, usize) -> Vec<usize> = *instructions.get(&operation.instruction).unwrap();
-        registers = operation_fn(registers, operation.a, operation.b, operation.c);
+        let operation_fn: fn(Vec<usize>, usize, usize, usize) -> Vec<usize> = *operations.get(&instruction.operation).unwrap();
+        registers = operation_fn(registers, instruction.a, instruction.b, instruction.c);
 
         instruction_pointer = registers[instruction_pointer_index];
         instruction_pointer += 1;
@@ -100,34 +100,34 @@ fn main() -> Result<()> {
     for line in lines {
         let vec: Vec<String> = line.split_whitespace().map(|x| x.to_string()).collect();
         program.push(Instruction {
-            instruction: vec[0].to_string(),
+            operation: vec[0].to_string(),
             a: vec[1].parse::<usize>().unwrap(),
             b: vec[2].parse::<usize>().unwrap(),
             c: vec[3].parse::<usize>().unwrap()});
     }
 
-    let mut instructions: HashMap<String, fn(Vec<usize>, usize, usize, usize) -> Vec<usize>> =
+    let mut operations: HashMap<String, fn(Vec<usize>, usize, usize, usize) -> Vec<usize>> =
         HashMap::new();
 
-    instructions.insert("addr".to_string(), day_16::addr);
-    instructions.insert("addi".to_string(), day_16::addi);
-    instructions.insert("mulr".to_string(), day_16::mulr);
-    instructions.insert("muli".to_string(), day_16::muli);
-    instructions.insert("banr".to_string(), day_16::banr);
-    instructions.insert("bani".to_string(), day_16::bani);
-    instructions.insert("borr".to_string(), day_16::borr);
-    instructions.insert("bori".to_string(), day_16::bori);
-    instructions.insert("setr".to_string(), day_16::setr);
-    instructions.insert("seti".to_string(), day_16::seti);
-    instructions.insert("gtir".to_string(), day_16::gtir);
-    instructions.insert("gtri".to_string(), day_16::gtri);
-    instructions.insert("gtrr".to_string(), day_16::gtrr);
-    instructions.insert("eqir".to_string(), day_16::eqir);
-    instructions.insert("eqri".to_string(), day_16::eqri);
-    instructions.insert("eqrr".to_string(), day_16::eqrr);
+    operations.insert("addr".to_string(), day_16::addr);
+    operations.insert("addi".to_string(), day_16::addi);
+    operations.insert("mulr".to_string(), day_16::mulr);
+    operations.insert("muli".to_string(), day_16::muli);
+    operations.insert("banr".to_string(), day_16::banr);
+    operations.insert("bani".to_string(), day_16::bani);
+    operations.insert("borr".to_string(), day_16::borr);
+    operations.insert("bori".to_string(), day_16::bori);
+    operations.insert("setr".to_string(), day_16::setr);
+    operations.insert("seti".to_string(), day_16::seti);
+    operations.insert("gtir".to_string(), day_16::gtir);
+    operations.insert("gtri".to_string(), day_16::gtri);
+    operations.insert("gtrr".to_string(), day_16::gtrr);
+    operations.insert("eqir".to_string(), day_16::eqir);
+    operations.insert("eqri".to_string(), day_16::eqri);
+    operations.insert("eqrr".to_string(), day_16::eqrr);
 
-    part1(&instructions, &program, instruction_pointer_index);
-    part2(&instructions, &program, instruction_pointer_index);
+    part1(&operations, &program, instruction_pointer_index);
+    part2(&operations, &program, instruction_pointer_index);
 
     Ok(())
 }
