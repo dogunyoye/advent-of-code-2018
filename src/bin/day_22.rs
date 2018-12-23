@@ -106,7 +106,6 @@ fn main() -> Result<()> {
                 _ => panic!("Unknown region type: {:?}", grid[x][y].region_type)
             }
         }
-        println!();
     }
 
     println!("Part one: {}", total);
