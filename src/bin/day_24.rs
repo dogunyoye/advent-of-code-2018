@@ -40,6 +40,190 @@ impl FightingGroup {
     }
 }
 
+fn battle(mut fighting_groups: Vec<FightingGroup>) -> (GroupType, u32) {
+    let mut stalemate = false;
+
+    loop {
+        fighting_groups.sort_by(|a, b| {
+            match a.effective_power.cmp(&b.effective_power) {
+                Ordering::Equal => a.initiative.cmp(&b.initiative),
+                other => other,
+            }
+        });
+
+        fighting_groups.reverse();
+
+        let num_of_groups = fighting_groups.len();
+
+        // dmg, attacker, attacker-index, defender, defender-index,
+        let mut pending_attacks: Vec<(u32, FightingGroup, i32, FightingGroup, i32)> = Vec::new();
+
+        for i in 0..num_of_groups {
+            let mut attacker = fighting_groups.get(i).unwrap();
+            let fighter_dmg = attacker.effective_power;
+
+            let mut default = FightingGroup {
+                group_type: GroupType::UNKNOWN,
+                num_of_units: 0,
+                hit_points: 0,
+                weaknesses: vec![],
+                immunities: vec![],
+                attack_type: AttackType::UNKNOWN,
+                attack_points: 0,
+                effective_power: 0,
+                initiative: 0
+            };
+
+            let mut to_attack = (0, attacker.clone(), -1, default.clone(), -1);
+
+            let mut greatest_dmg = 0;
+
+            for j in 0..num_of_groups {
+
+                let defender: &FightingGroup = fighting_groups.get(j).unwrap();
+
+                // check pending attacks to see if the target (defender) has already
+                // been selected
+                let mut already_selected = false;
+                for x in 0..pending_attacks.len() {
+                    if pending_attacks[x].3 == *defender {
+                        already_selected = true;
+                    }
+                }
+
+                if already_selected {
+                    // skip iteration, find another target
+                    // to attack.
+                    continue;
+                }
+
+                if defender.group_type != attacker.group_type {
+
+                    let mut dmg = fighter_dmg;
+                    let is_immune = defender.immunities.contains(&attacker.attack_type);
+                    let is_weak = defender.weaknesses.contains(&attacker.attack_type);
+
+                    if is_weak {
+                        dmg *= 2;
+                    } else if is_immune {
+                        // target is immune skip iteration
+                        continue;
+
+                    }
+
+                    if dmg > greatest_dmg {
+                        greatest_dmg = dmg;
+                        to_attack = (dmg, attacker.clone(), i as i32, defender.clone(), j as i32);
+                    } else if dmg == greatest_dmg {
+
+                        if defender.effective_power > to_attack.3.effective_power {
+                            to_attack = (dmg, attacker.clone(), i as i32, defender.clone(), j as i32);
+                        } else if defender.effective_power == to_attack.3.effective_power {
+
+                            if defender.initiative > to_attack.3.initiative {
+                                to_attack = (dmg, attacker.clone(), i as i32, defender.clone(), j as i32);
+                            } else if defender.initiative == to_attack.3.initiative {
+                                // don't choose a target aka set back to default
+                                to_attack = (0, attacker.clone(), -1, default.clone(), -1);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if to_attack.2 != -1 {
+                pending_attacks.push(to_attack);
+            }
+        }
+
+        pending_attacks.sort_by(|a, b| { a.1.initiative.cmp(&b.1.initiative) });
+        pending_attacks.reverse();
+
+        let mut any_killed = false;
+
+        for attack in pending_attacks {
+            let mut dmg = 0;
+            if let Some(attacker) = fighting_groups.get_mut(attack.2 as usize) {
+                dmg = attacker.effective_power;
+            }
+
+            if dmg == 0 {
+                continue;
+            }
+
+            let is_immune = attack.3.immunities.contains(&attack.1.attack_type);
+            let is_weak = attack.3.weaknesses.contains(&attack.1.attack_type);
+
+            if is_weak {
+                dmg *= 2;
+            } else if is_immune {
+                dmg = 0;
+            }
+
+            let target: &mut FightingGroup = fighting_groups.get_mut(attack.4 as usize).unwrap();
+            let units_removed: f64 = dmg as f64 / target.hit_points as f64;
+
+            if units_removed >= (target.num_of_units as i32).into() {
+                target.num_of_units = 0;
+            } else {
+                target.num_of_units -= units_removed as u32;
+            }
+
+            if units_removed as u32 > 0 {
+                any_killed = true;
+            }
+
+            // re-evaluate target's effective power
+            target.effective_power = target.num_of_units * target.attack_points;
+        }
+
+        if !any_killed {
+            stalemate = true;
+            break;
+        }
+
+        // get rid of the groups with no fighters
+        fighting_groups.retain(|ref i|i.num_of_units > 0 );
+        //println!("HELP {:?}", fighting_groups);
+
+        let mut all_same_type = false;
+        for x in 0..fighting_groups.len() {
+            if x + 1 == fighting_groups.len() {
+                break;
+            }
+
+            if fighting_groups[x].group_type == fighting_groups[x+1].group_type {
+                all_same_type = true;
+            }
+            else {
+                all_same_type = false;
+                break;
+            }
+        }
+
+        // if all the fighting groups are the
+        // same type, we have a winner.
+        // Break loop.
+        if all_same_type {
+            break;
+        }
+    }
+
+    let mut total = 0;
+    let mut winning_type: GroupType = GroupType::UNKNOWN;
+
+    if stalemate {
+        return (GroupType::UNKNOWN, total);
+    }
+
+    for group in fighting_groups {
+        winning_type = group.group_type;
+        total += group.num_of_units;
+    }
+
+    (winning_type, total)
+}
+
 fn main() -> () {
 
     let immune0 = FightingGroup {
@@ -309,165 +493,26 @@ fn main() -> () {
         fighting_groups[x].calculate_effective_power();
     }
 
+    let fighting_groups_part2 = fighting_groups.clone();
+
+    println!("Part one: {:?}", battle(fighting_groups));
+
+    let mut boost = 1;
     loop {
-        fighting_groups.sort_by(|a, b| {
-            match a.effective_power.cmp(&b.effective_power) {
-                Ordering::Equal => a.initiative.cmp(&b.initiative),
-                other => other,
-            }
-        });
-
-        fighting_groups.reverse();
-
-        let num_of_groups = fighting_groups.len();
-
-        // dmg, attacker, attacker-index, defender, defender-index,
-        let mut pending_attacks: Vec<(u32, FightingGroup, i32, FightingGroup, i32)> = Vec::new();
-
-        for i in 0..num_of_groups {
-            let mut attacker = fighting_groups.get(i).unwrap();
-            let fighter_dmg = attacker.effective_power;
-
-            let mut default = FightingGroup {
-                group_type: GroupType::UNKNOWN,
-                num_of_units: 0,
-                hit_points: 0,
-                weaknesses: vec![],
-                immunities: vec![],
-                attack_type: AttackType::UNKNOWN,
-                attack_points: 0,
-                effective_power: 0,
-                initiative: 0
-            };
-
-            let mut to_attack = (0, attacker.clone(), -1, default.clone(), -1);
-
-            let mut greatest_dmg = 0;
-
-            for j in 0..num_of_groups {
-
-                let defender: &FightingGroup = fighting_groups.get(j).unwrap();
-
-                // check pending attacks to see if the target (defender) has already
-                // been selected
-                let mut already_selected = false;
-                for x in 0..pending_attacks.len() {
-                    if pending_attacks[x].3 == *defender {
-                        already_selected = true;
-                    }
-                }
-
-                if already_selected {
-                    // skip iteration, find another target
-                    // to attack.
-                    continue;
-                }
-
-                if defender.group_type != attacker.group_type {
-
-                    let mut dmg = fighter_dmg;
-                    let is_immune = defender.immunities.contains(&attacker.attack_type);
-                    let is_weak = defender.weaknesses.contains(&attacker.attack_type);
-
-                    if is_weak {
-                        dmg *= 2;
-                    } else if is_immune {
-                        // target is immune skip iteration
-                        continue;
-
-                    }
-
-                    if dmg > greatest_dmg {
-                        greatest_dmg = dmg;
-                        to_attack = (dmg, attacker.clone(), i as i32, defender.clone(), j as i32);
-                    } else if dmg == greatest_dmg {
-
-                        if defender.effective_power > to_attack.3.effective_power {
-                            to_attack = (dmg, attacker.clone(), i as i32, defender.clone(), j as i32);
-                        } else if defender.effective_power == to_attack.3.effective_power {
-
-                            if defender.initiative > to_attack.3.initiative {
-                                to_attack = (dmg, attacker.clone(), i as i32, defender.clone(), j as i32);
-                            } else if defender.initiative == to_attack.3.initiative {
-                                // don't choose a target aka set back to default
-                                to_attack = (0, attacker.clone(), -1, default.clone(), -1);
-                            }
-                        }
-                    }
-                }
-            }
-
-            if to_attack.2 != -1 {
-                pending_attacks.push(to_attack);
-            }
+        let mut immune_boosted_fighters = fighting_groups_part2.clone();
+        for i in 0..10 {
+            let imm = immune_boosted_fighters.get_mut(i).unwrap();
+            imm.attack_points += boost;
+            imm.calculate_effective_power();
         }
 
-        pending_attacks.sort_by(|a, b| { a.1.initiative.cmp(&b.1.initiative) });
-        pending_attacks.reverse();
-
-        for attack in pending_attacks {
-            let mut dmg = 0;
-            if let Some(attacker) = fighting_groups.get_mut(attack.2 as usize) {
-                dmg = attacker.effective_power;
-            }
-
-            if dmg == 0 {
-                continue;
-            }
-
-            let is_immune = attack.3.immunities.contains(&attack.1.attack_type);
-            let is_weak = attack.3.weaknesses.contains(&attack.1.attack_type);
-
-            if is_weak {
-                dmg *= 2;
-            } else if is_immune {
-                dmg = 0;
-            }
-
-            let target: &mut FightingGroup = fighting_groups.get_mut(attack.4 as usize).unwrap();
-            let units_removed: f64 = dmg as f64 / target.hit_points as f64;
-
-            if units_removed >= (target.num_of_units as i32).into() {
-                target.num_of_units = 0;
-            } else {
-                target.num_of_units -= units_removed as u32;
-            }
-
-            // re-evaluate target's effective power
-            target.effective_power = target.num_of_units * target.attack_points;
-        }
-
-        // get rid of the groups with no fighters
-        fighting_groups.retain(|ref i|i.num_of_units > 0 );
-
-        let mut all_same_type = false;
-        for x in 0..fighting_groups.len() {
-            if x + 1 == fighting_groups.len() {
-                break;
-            }
-
-            if fighting_groups[x].group_type == fighting_groups[x+1].group_type {
-                all_same_type = true;
-            }
-            else {
-                all_same_type = false;
-                break;
-            }
-        }
-
-        // if all the fighting groups are the
-        // same type, we have a winner.
-        // Break loop.
-        if all_same_type {
+        let result = battle(immune_boosted_fighters);
+        if result.0 == GroupType::IMMUNE {
+            println!("Part two: {:?}", result);
             break;
         }
+
+        boost += 1;
     }
 
-    let mut total = 0;
-
-    for group in fighting_groups {
-        total += group.num_of_units;
-    }
-
-    println!("Part one: {}", total);
 }
