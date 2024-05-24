@@ -2,15 +2,13 @@
 
 use std::fs::File;
 use std::io::{BufRead, BufReader, Result};
-use std::collections::HashMap;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::collections::VecDeque;
 
-#[derive(Clone)]
+#[derive(Clone, Copy, Debug)]
 struct Worker {
-    id: i32,
     step: char,
-    time_left: i32
+    time_left: usize
 }
 
 impl Worker {
@@ -19,7 +17,7 @@ impl Worker {
         self.step = step.clone();
     }
 
-    fn set_work_time(&mut self, work_time: i32) {
+    fn set_work_time(&mut self, work_time: usize) {
         self.time_left = work_time;
     }
 
@@ -105,26 +103,87 @@ fn main() -> Result<()>{
     }
     println!("Part 1: {}", result_string);
 
-    let mut result2: Vec<char> = Vec::new();
     let mut start_nodes: Vec<char> = Vec::new();
+    let mut workers: Vec<Worker> = Vec::new();
+    let mut work_queue: Vec<char> = Vec::new();
+    let mut time_taken = 0;
+    let alphabet: Vec<char> = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".chars().collect();
+    let mut dependents: HashMap<char, Vec<char>> = HashMap::new();
+    let mut completed: HashSet<char> = HashSet::new();
 
-    for (key, _val) in dependencies_map.iter() {
+    for (key, val) in dependencies_map.iter() {
         if let None = dependencies_counter_map.get_mut(&key) {
             start_nodes.push(key.clone());
+        }
+
+        for v in val {
+            if !dependents.contains_key(v) {
+                let mut parents: Vec<char> = Vec::<char>::new();
+                parents.push(*key);
+                dependents.insert(*v, parents);
+            }
+            else {
+                dependents.get_mut(v).unwrap().push(*key)
+            }
         }
     }
 
     start_nodes.sort();
 
-    let mut total_work_time: i32 = 0;
-    //let initial_job_time = start_nodes.get(0).unwrap().clone();
-    //total_work_time = ((initial_job_time as u8) - ('A' as u8) + 1) as i32;
+    for _ in 0..5 {
+        workers.push(Worker{ step: '#', time_left: 0})
+    }
 
-    let worker1 = Worker { id: 1, step: '#', time_left: 0 };
-    let worker2 = Worker { id: 2, step: '#', time_left: 0 };
-//    let worker3 = Worker { id: 2, step: '#', time_left: 0 };
-//    let worker4 = Worker { id: 2, step: '#', time_left: 0 };
-//    let worker5 = Worker { id: 2, step: '#', time_left: 0 };
+    for i in 0..start_nodes.len() {
+        let w: &mut Worker = workers.get_mut(i).unwrap();
+        let c = *start_nodes.get(i).unwrap();
+        w.set_step(c);
+        w.set_work_time(60 + alphabet.iter().position(|&r| r == c).unwrap() + 1);
+    }
+
+    while completed.len() != result_string.len() {
+        time_taken += 1;
+
+        let mut unlocked: HashSet<char> = HashSet::new();
+
+        for e in &mut workers {
+            if e.time_left != 0 {
+                e.work();
+                if e.time_left == 0 {
+                    completed.insert(e.step);
+                    for (k, v) in dependents.iter_mut() {
+                        let idx = v.iter().position(|&r| r == e.step);
+                        if idx.is_some() {
+                            v.remove(idx.unwrap());
+                            if v.len() == 0 {
+                                unlocked.insert(*k);
+                            }
+                        }
+                    }
+                    dependents.remove_entry(&e.step);
+                    e.set_step('#');
+                }
+            }
+        }
+
+        for u in unlocked {
+            work_queue.push(u)
+        }
+
+        work_queue.sort();
+
+        for e in &mut workers {
+            if e.time_left == 0 {
+                if work_queue.len() > 0 {
+                    let s = work_queue.remove(0);
+                    e.set_step(s);
+                    e.set_work_time(60 + alphabet.iter().position(|&r| r == s).unwrap() + 1);
+                }
+            }
+        }
+    }
+
+    println!("Part 2: {}", time_taken);
 
     Ok(())
 }
