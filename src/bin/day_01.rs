@@ -1,4 +1,4 @@
-//! `cargo run --bin day_1`
+//! `cargo run --bin day_01`
 
 use std::fs::File;
 use std::io::{BufRead, BufReader, Result};

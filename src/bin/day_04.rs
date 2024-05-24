@@ -1,4 +1,4 @@
-//! `cargo run --bin day_4`
+//! `cargo run --bin day_04`
 
 extern crate chrono;
 
