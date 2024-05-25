@@ -6,7 +6,7 @@ use std::collections::HashMap;
 
 use std::iter::FromIterator;
 
-fn calculate_sum(capacity: usize, generations: i64) -> i64 {
+fn calculate_sum(capacity: usize, generations: i64, part_two: bool) -> i64 {
     let mut state: Vec<char> = Vec::with_capacity(capacity);
     for _ in 0..capacity {
         state.push('.');
@@ -22,7 +22,7 @@ fn calculate_sum(capacity: usize, generations: i64) -> i64 {
         let line = line.unwrap();
         if line.contains("initial state") {
             let initial_state = line.split(" ").collect::<Vec<&str>>();
-            let mut chars = initial_state[2].trim().chars();
+            let chars: std::str::Chars = initial_state[2].trim().chars();
             for c in chars {
                 if let Some(initial_data) = state.get_mut(data_insert_index) {
                     *initial_data = c;
@@ -36,7 +36,13 @@ fn calculate_sum(capacity: usize, generations: i64) -> i64 {
         }
     }
 
+    let mut count = 0;
+    let mut seen: Vec<i64> = Vec::new();
+    let mut prev = 0;
+
+
     for _ in 1..generations + 1 {
+        count += 1;
         for j in 0..state.len() {
             let mut evaluate: Vec<char> = Vec::new();
 
@@ -84,6 +90,28 @@ fn calculate_sum(capacity: usize, generations: i64) -> i64 {
         state.clear();
         state = result.clone();
         result.clear();
+
+        if part_two {
+            let mut sum: i64 = 0;
+            for x in 0..state.len() {
+                let index: i32 = x as i32;
+                if *state.get(x).unwrap() == '#' {
+                    sum += (index - padding) as i64;
+                }
+            }
+
+            let last = seen.last();
+            let mut diff = prev - sum;
+    
+            if last.is_some() && *last.unwrap() == diff {
+                diff *= -1;
+                let initial = sum - diff;
+                return initial + ((50000000000 - (count - 1)) * diff);
+            }
+
+            seen.push(diff);
+            prev = sum;
+        }
     }
 
     let mut sum: i64 = 0;
@@ -99,5 +127,6 @@ fn calculate_sum(capacity: usize, generations: i64) -> i64 {
 }
 
 fn main() -> (){
-    println!("Part 1: {}", calculate_sum(200, 20));
+    println!("Part 1: {}", calculate_sum(200, 20, false));
+    println!("Part 2: {}", calculate_sum(2000, 50000000000, true));
 }
