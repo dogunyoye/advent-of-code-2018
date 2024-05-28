@@ -60,7 +60,7 @@ impl Cart {
     }
 }
 
-fn build_map() -> (HashMap<Position, char>, HashMap<Position, char>, Vec<Cart>) {
+fn build_track_data() -> (HashMap<Position, char>, HashMap<Position, char>, Vec<Cart>) {
     let mut track_map: HashMap<Position, char> = HashMap::new();
     let mut initial_map: HashMap<Position, char> = HashMap::new();
     let mut carts: Vec<Cart> = Vec::new();
@@ -119,10 +119,11 @@ fn print_map(track_map: HashMap<Position, char>) {
     }
 }
 
-fn find_location_of_first_crash(
-    mut track_map: HashMap<Position, char>,
-    initial_map: HashMap<Position, char>,
-    mut carts: Vec<Cart>) -> Position {
+fn simulate_carts(track_data: (HashMap<Position, char>, HashMap<Position, char>, Vec<Cart>), is_part_two: bool) -> Position {
+
+    let mut track_map = track_data.0;
+    let initial_map = track_data.1;
+    let mut carts = track_data.2;
 
     loop {
         carts.sort_by(|a, b| {
@@ -158,7 +159,9 @@ fn find_location_of_first_crash(
             if track_map.contains_key(&next) {
                 let neighbour = *track_map.get(&next).unwrap();
                 if neighbour != ' ' && (neighbour == '>' || neighbour == '<' || neighbour == 'v' || neighbour == '^') {
-                    return Position{i: next.j, j: next.i};
+                    if !is_part_two {
+                        return Position{i: next.j, j: next.i};
+                    }
                 }
 
                 match neighbour {
@@ -224,11 +227,7 @@ fn find_location_of_first_crash(
 }
 
 fn main() -> (){
-    let maps = build_map();
-    let track_map = maps.0;
-    let initial_map = maps.1;
-    let carts = maps.2;
 
-    let crash_location = find_location_of_first_crash(track_map, initial_map, carts);
+    let crash_location = simulate_carts(build_track_data(), false);
     println!("Part 1: {},{}", crash_location.i, crash_location.j);
 }
