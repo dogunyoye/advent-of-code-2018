@@ -143,12 +143,20 @@ fn simulate_carts(track_data: (HashMap<Position, char>, HashMap<Position, char>,
     let mut carts = track_data.2;
     let mut cart_positions: HashMap<usize, Position> = HashMap::new();
 
+    for c in &carts {
+        cart_positions.insert(c.id, c.pos);
+    }
+
     loop {
         carts.sort_by(|a: &Cart, b: &Cart| cart_sort_fn(a, b));
 
         let mut to_remove: HashSet<usize> = HashSet::new();
 
         for cart in carts.iter_mut() {
+
+            if is_part_two && to_remove.contains(&cart.id) {
+                continue;
+            }
 
             let next;
             match cart.facing {
@@ -176,15 +184,21 @@ fn simulate_carts(track_data: (HashMap<Position, char>, HashMap<Position, char>,
                         return Position{i: next.j, j: next.i};
                     }
 
-                    // to_remove.insert(cart.pos);
-                    // to_remove.insert(next);
+                    println!("crashed!");
+
+                    // println!("CART-POS: {:?}", cart_positions);
+                    // println!("now {:?}", cart.pos);
+                    // println!("next {:?}", next);
+
                     track_map.insert(cart.pos, *initial_map.get(&cart.pos).unwrap());
                     cart.pos = Position{i: next.i, j: next.j};
                     track_map.insert(cart.pos, *initial_map.get(&cart.pos).unwrap());
 
-                    for (k, v) in cart_positions.clone() {
-                        if v == cart.pos {
-                            to_remove.insert(k);
+                    to_remove.insert(cart.id);
+                    cart_positions.remove(&cart.id);
+                    for (k, v) in &cart_positions {
+                        if *v == cart.pos {
+                            to_remove.insert(*k);
                         }
                     }
 
@@ -192,9 +206,7 @@ fn simulate_carts(track_data: (HashMap<Position, char>, HashMap<Position, char>,
                         cart_positions.remove(&r);
                     }
 
-                    println!("RRR: {:?}", cart_positions);
-
-                    //print_map(track_map.clone());
+                    //println!("RRR: {:?}", cart_positions);
                     continue;
                 }
 
@@ -256,19 +268,16 @@ fn simulate_carts(track_data: (HashMap<Position, char>, HashMap<Position, char>,
                 track_map.insert(cart.pos, *initial_map.get(&cart.pos).unwrap());
                 cart.pos = Position{i: next.i, j: next.j};
 
-                cart_positions.insert(cart.id, cart.pos);
+                cart_positions.insert(cart.id, cart.pos.clone());
             }
         }
 
         if is_part_two {
-            println!("{:?}", carts);
-            println!("TO REMOVE: {:?}", to_remove);
-            println!("++++++++++++++++++++++++++");
-            //print_map(track_map.clone());
-            if carts.len() == 0 {
+            if carts.len() == 2 {
                 panic!("STOP");
             }
-            carts.retain(|c| !to_remove.contains(&c.id));
+
+            carts.retain(|&c| !to_remove.contains(&c.id));
             if carts.len() == 1 {
                 let last_cart = carts.get(0).unwrap();
                 return Position{i: last_cart.pos.j, j: last_cart.pos.i};
