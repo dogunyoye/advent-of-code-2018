@@ -131,7 +131,7 @@ fn cart_sort_fn(a: &Cart, b: &Cart) -> Ordering {
     if a.pos.i < b.pos.i { return Ordering::Less; }
 
     if a.pos.j > b.pos.j { return Ordering::Greater; }
-    if a.pos.i < b.pos.j { return Ordering::Less; }
+    if a.pos.j < b.pos.j { return Ordering::Less; }
 
     return Ordering::Equal;
 }
@@ -149,10 +149,9 @@ fn simulate_carts(track_data: (HashMap<Position, char>, HashMap<Position, char>,
 
     loop {
         carts.sort_by(|a: &Cart, b: &Cart| cart_sort_fn(a, b));
-
         let mut to_remove: HashSet<usize> = HashSet::new();
 
-        for cart in carts.iter_mut() {
+        for cart in &mut carts {
 
             if is_part_two && to_remove.contains(&cart.id) {
                 continue;
@@ -184,15 +183,9 @@ fn simulate_carts(track_data: (HashMap<Position, char>, HashMap<Position, char>,
                         return Position{i: next.j, j: next.i};
                     }
 
-                    println!("crashed!");
-
-                    // println!("CART-POS: {:?}", cart_positions);
-                    // println!("now {:?}", cart.pos);
-                    // println!("next {:?}", next);
-
+                    track_map.insert(next, *initial_map.get(&next).unwrap());
                     track_map.insert(cart.pos, *initial_map.get(&cart.pos).unwrap());
                     cart.pos = Position{i: next.i, j: next.j};
-                    track_map.insert(cart.pos, *initial_map.get(&cart.pos).unwrap());
 
                     to_remove.insert(cart.id);
                     cart_positions.remove(&cart.id);
@@ -206,7 +199,6 @@ fn simulate_carts(track_data: (HashMap<Position, char>, HashMap<Position, char>,
                         cart_positions.remove(&r);
                     }
 
-                    //println!("RRR: {:?}", cart_positions);
                     continue;
                 }
 
@@ -273,10 +265,6 @@ fn simulate_carts(track_data: (HashMap<Position, char>, HashMap<Position, char>,
         }
 
         if is_part_two {
-            if carts.len() == 2 {
-                panic!("STOP");
-            }
-
             carts.retain(|&c| !to_remove.contains(&c.id));
             if carts.len() == 1 {
                 let last_cart = carts.get(0).unwrap();
