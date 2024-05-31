@@ -1,7 +1,7 @@
 //! `cargo run --bin day_13`
 
 use std::cmp::Ordering;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
@@ -11,7 +11,9 @@ struct Position {
     j: usize
 }
 
+#[derive(Debug, Eq, Hash, PartialEq, Copy, Clone)]
 struct Cart {
+    id: usize,
     pos: Position,
     facing: char,
     intersections: usize
@@ -66,6 +68,7 @@ fn build_track_data() -> (HashMap<Position, char>, HashMap<Position, char>, Vec<
     let mut carts: Vec<Cart> = Vec::new();
 
     let mut i = 0;
+    let mut cart_id: usize = 0;
     for line in BufReader::new(File::open("src/data/day_13_input.txt").unwrap()).lines() {
         let row = line.unwrap();
         let mut j = 0;
@@ -75,19 +78,23 @@ fn build_track_data() -> (HashMap<Position, char>, HashMap<Position, char>, Vec<
             match c {
                 '>' => {
                     initial_map.insert(position, '-');
-                    carts.push(Cart{pos: position, facing: '>', intersections: 0});
+                    carts.push(Cart{id: cart_id, pos: position, facing: '>', intersections: 0});
+                    cart_id += 1;
                 },
                 'v' => {
                     initial_map.insert(position, '|');
-                    carts.push(Cart{pos: position, facing: 'v', intersections: 0});
+                    carts.push(Cart{id: cart_id, pos: position, facing: 'v', intersections: 0});
+                    cart_id += 1;
                 },
                 '<' => {
                     initial_map.insert(position, '-');
-                    carts.push(Cart{pos: position, facing: '<', intersections: 0});
+                    carts.push(Cart{id: cart_id, pos: position, facing: '<', intersections: 0});
+                    cart_id += 1;
                 },
                 '^' => {
                     initial_map.insert(position, '|');
-                    carts.push(Cart{pos: position, facing: '^', intersections: 0});
+                    carts.push(Cart{id: cart_id, pos: position, facing: '^', intersections: 0});
+                    cart_id += 1;
                 },
                 _ => {
                     initial_map.insert(position, c);
@@ -119,24 +126,30 @@ fn print_map(track_map: HashMap<Position, char>) {
     }
 }
 
+fn cart_sort_fn(a: &Cart, b: &Cart) -> Ordering {
+    if a.pos.i > b.pos.i { return Ordering::Greater; }
+    if a.pos.i < b.pos.i { return Ordering::Less; }
+
+    if a.pos.j > b.pos.j { return Ordering::Greater; }
+    if a.pos.i < b.pos.j { return Ordering::Less; }
+
+    return Ordering::Equal;
+}
+
 fn simulate_carts(track_data: (HashMap<Position, char>, HashMap<Position, char>, Vec<Cart>), is_part_two: bool) -> Position {
 
     let mut track_map = track_data.0;
     let initial_map = track_data.1;
     let mut carts = track_data.2;
+    let mut cart_positions: HashMap<usize, Position> = HashMap::new();
 
     loop {
-        carts.sort_by(|a, b| {
-            if a.pos.i > b.pos.i { return Ordering::Greater; }
-            if a.pos.i < b.pos.i { return Ordering::Less; }
-        
-            if a.pos.j > b.pos.j { return Ordering::Greater; }
-            if a.pos.i < b.pos.j { return Ordering::Less; }
-        
-            return Ordering::Equal;
-        });
+        carts.sort_by(|a: &Cart, b: &Cart| cart_sort_fn(a, b));
+
+        let mut to_remove: HashSet<usize> = HashSet::new();
 
         for cart in carts.iter_mut() {
+
             let next;
             match cart.facing {
                 '>' => {
@@ -152,7 +165,7 @@ fn simulate_carts(track_data: (HashMap<Position, char>, HashMap<Position, char>,
                     next = Position{i: cart.pos.i - 1, j:cart.pos.j};
                 },
                 _ => {
-                    continue;
+                    panic!("Invalid cart character: {}", cart.facing)
                 }
             }
 
@@ -162,6 +175,27 @@ fn simulate_carts(track_data: (HashMap<Position, char>, HashMap<Position, char>,
                     if !is_part_two {
                         return Position{i: next.j, j: next.i};
                     }
+
+                    // to_remove.insert(cart.pos);
+                    // to_remove.insert(next);
+                    track_map.insert(cart.pos, *initial_map.get(&cart.pos).unwrap());
+                    cart.pos = Position{i: next.i, j: next.j};
+                    track_map.insert(cart.pos, *initial_map.get(&cart.pos).unwrap());
+
+                    for (k, v) in cart_positions.clone() {
+                        if v == cart.pos {
+                            to_remove.insert(k);
+                        }
+                    }
+
+                    for r in &to_remove {
+                        cart_positions.remove(&r);
+                    }
+
+                    println!("RRR: {:?}", cart_positions);
+
+                    //print_map(track_map.clone());
+                    continue;
                 }
 
                 match neighbour {
@@ -221,13 +255,32 @@ fn simulate_carts(track_data: (HashMap<Position, char>, HashMap<Position, char>,
                 track_map.insert(next, cart.facing);
                 track_map.insert(cart.pos, *initial_map.get(&cart.pos).unwrap());
                 cart.pos = Position{i: next.i, j: next.j};
+
+                cart_positions.insert(cart.id, cart.pos);
+            }
+        }
+
+        if is_part_two {
+            println!("{:?}", carts);
+            println!("TO REMOVE: {:?}", to_remove);
+            println!("++++++++++++++++++++++++++");
+            //print_map(track_map.clone());
+            if carts.len() == 0 {
+                panic!("STOP");
+            }
+            carts.retain(|c| !to_remove.contains(&c.id));
+            if carts.len() == 1 {
+                let last_cart = carts.get(0).unwrap();
+                return Position{i: last_cart.pos.j, j: last_cart.pos.i};
             }
         }
     }
 }
 
 fn main() -> (){
-
     let crash_location = simulate_carts(build_track_data(), false);
     println!("Part 1: {},{}", crash_location.i, crash_location.j);
+
+    let last_cart_position = simulate_carts(build_track_data(), true);
+    println!("Part 2: {},{}", last_cart_position.i, last_cart_position.j);
 }
