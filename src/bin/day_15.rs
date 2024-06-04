@@ -31,7 +31,15 @@ struct Occupant {
 
 impl Occupant {
 
-    fn is_enemy_adjacent(&mut self, arena: &HashMap<Position, Occupant>) -> (Vec<Position>, bool) {
+    fn enemy(&mut self) -> OccupantType {
+        return match self.occ_type {
+            OccupantType::Elf(_) => OccupantType::Goblin('G'),
+            OccupantType::Goblin(_) => OccupantType::Elf('E'),
+            _ => panic!("No corresponding enemy for: {:?}", self.occ_type)
+        };
+    }
+
+    fn adjacent_enemies(&mut self, arena: &HashMap<Position, Occupant>) -> Vec<Position> {
         let current_position = self.position;
         let mut neighbours: Vec<Position> = Vec::new();
         neighbours.push(Position{i: current_position.i - 1, j: current_position.j}); // north
@@ -39,16 +47,23 @@ impl Occupant {
         neighbours.push(Position{i: current_position.i + 1, j: current_position.j}); // south
         neighbours.push(Position{i: current_position.i, j: current_position.j - 1}); // west
 
-        let enemy = match self.occ_type {
-            OccupantType::Elf(_) => OccupantType::Goblin('G'),
-            OccupantType::Goblin(_) => OccupantType::Elf('E'),
-            _ => panic!("No corresponding enemy for: {:?}", self.occ_type)
-        };
-
+        let enemy = self.enemy();
         neighbours = neighbours.into_iter().filter(|p| arena.get(p).unwrap().occ_type == enemy).collect();
-        let size = neighbours.len();
 
-        return (neighbours, size != 0);
+        return neighbours;
+    }
+
+    fn move_or_attack(&mut self, arena: &HashMap<Position, Occupant>) {
+        let adjacent_enemies = self.adjacent_enemies(arena);
+        if adjacent_enemies.len() == 0 {
+            // no enemies ajacent, move to the closest one
+            let enemies: Vec<(&Position, &Occupant)> = arena.into_iter().filter(|(_, v)| v.occ_type == self.enemy()).collect();
+            println!("{:?}", enemies);
+            if enemies.len() == 0 {
+                // no enemies, so can't move or attack
+                return;
+            }
+        }
     }
 }
 
@@ -56,6 +71,11 @@ impl Occupant {
 struct Position {
     i: usize,
     j: usize
+}
+
+struct Node {
+    parent: Position,
+    current: Position
 }
 
 #[allow(unused)]
@@ -141,7 +161,7 @@ fn find_outcome_of_battle() -> usize {
     //println!("{:?}", find_elves_and_goblins(arena));
     let combatants = find_elves_and_goblins(&arena);
     for mut c in combatants {
-        println!("{:?}", c.1.is_enemy_adjacent(&arena));
+        c.1.move_or_attack(&arena);
     }
     return 0;
 }
