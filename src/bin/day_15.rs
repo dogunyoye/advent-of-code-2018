@@ -54,7 +54,7 @@ impl Occupant {
         return neighbours;
     }
 
-    fn move_or_attack(&mut self, arena: &mut HashMap<Position, Occupant>) -> (bool, Option<usize>) {
+    fn move_or_attack(&mut self, arena: &mut HashMap<Position, Occupant>) -> (bool, Option<Occupant>) {
         let mut adjacent_enemies = self.adjacent_enemies(arena);
 
         if adjacent_enemies.len() == 0 {
@@ -123,10 +123,11 @@ impl Occupant {
         arena.insert(occupant.position, occupant);
 
         if occupant.hp <= 0 {
+            let defeated_occupant = occupant.clone();
             let field_occupant = Occupant{id: 0, position: occupant.position.clone(), occ_type: OccupantType::OpenField('.'), attack_power: 0, hp: 0};
             arena.insert(occupant.position.clone(), field_occupant);
             //println!("killed {:?}", occupant);
-            return (false, Some(occupant.id));
+            return (false, Some(defeated_occupant));
         }
 
         return (false, None);
@@ -352,8 +353,13 @@ fn combat_terminated(arena: &HashMap<Position, Occupant>) -> bool {
     return elves.len() == 0 || goblins.len() == 0;
 }
 
-fn find_outcome_of_battle() -> i32 {
-    let mut arena = build_arena();
+fn enhance_elf_attack_power(attack_power: i32, mut arena: HashMap<Position, Occupant>) -> HashMap<Position, Occupant> {
+    arena.values_mut().for_each(|o| { if o.occ_type.unwrap_occupant() == 'E' { o.attack_power = attack_power; }});
+    return arena;
+}
+
+// TODO - Profile and optimise
+fn find_outcome_of_battle(mut arena: HashMap<Position, Occupant>, part_2: bool) -> Option<i32> {
     let mut rounds = 0;
     let mut killed: HashSet<usize> = HashSet::new();
 
@@ -363,10 +369,17 @@ fn find_outcome_of_battle() -> i32 {
 
         for (_, combatant) in combatants.iter_mut() {
             if !killed.contains(&combatant.id) {
-                let (combat_ended, defeated_id) = combatant.move_or_attack(arena.borrow_mut());
+                let (combat_ended, defeated_combatant) = combatant.move_or_attack(arena.borrow_mut());
 
-                if defeated_id.is_some() {
-                    killed.insert(defeated_id.unwrap());
+                if defeated_combatant.is_some() {
+                    let defeated = defeated_combatant.unwrap();
+                    if part_2 {
+                        if defeated.occ_type.unwrap_occupant() == 'E' {
+                            return None;
+                        }
+                    }
+
+                    killed.insert(defeated.id);
                 }
 
                 if combat_ended {
@@ -390,9 +403,23 @@ fn find_outcome_of_battle() -> i32 {
         .map(|o| o.hp)
         .sum();
 
-    return remaining_hp * rounds;
+    return Some(remaining_hp * rounds);
+}
+
+fn find_outcome_of_battle_with_enhanced_elves(arena: HashMap<Position, Occupant>, part_2: bool) -> i32 {
+    let mut attack_power = 4;
+    loop {
+        let arena_copy = enhance_elf_attack_power(attack_power, arena.clone());
+        let outcome = find_outcome_of_battle(arena_copy, part_2);
+        if outcome.is_some() {
+            return outcome.unwrap();
+        }
+
+        attack_power += 1;
+    }
 }
 
 fn main() -> (){
-    println!("Part 1: {}", find_outcome_of_battle());
+    println!("Part 1: {}", find_outcome_of_battle(build_arena(), false).unwrap());
+    println!("Part 2: {}", find_outcome_of_battle_with_enhanced_elves(build_arena(), true));
 }
