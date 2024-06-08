@@ -126,7 +126,6 @@ impl Occupant {
             let defeated_occupant = occupant.clone();
             let field_occupant = Occupant{id: 0, position: occupant.position.clone(), occ_type: OccupantType::OpenField('.'), attack_power: 0, hp: 0};
             arena.insert(occupant.position.clone(), field_occupant);
-            //println!("killed {:?}", occupant);
             return (false, Some(defeated_occupant));
         }
 
