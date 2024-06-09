@@ -1,61 +1,61 @@
 //! `cargo run --bin day_16`
 
 use std::fs::File;
-use std::io::{BufRead, BufReader, Result};
+use std::io::{BufRead, BufReader};
 use std::collections::HashMap;
 use std::collections::HashSet;
 
-fn addr(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Vec<usize> {
+pub(crate) fn addr(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Vec<usize> {
     register[c] = register[a]  + register[b];
     register
 }
 
-fn addi(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Vec<usize> {
+pub(crate) fn addi(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Vec<usize> {
     register[c] = register[a] + b;
     register
 }
 
-fn mulr(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Vec<usize> {
+pub(crate) fn mulr(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Vec<usize> {
     register[c] = register[a] * register[b];
     register
 }
 
-fn muli(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Vec<usize> {
+pub(crate) fn muli(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Vec<usize> {
     register[c] = register[a] * b;
     register
 }
 
-fn banr(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Vec<usize> {
+pub(crate) fn banr(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Vec<usize> {
     register[c] = register[a] & register[b];
     register
 }
 
-fn bani(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Vec<usize> {
+pub(crate) fn bani(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Vec<usize> {
     register[c] = register[a] & b;
     register
 }
 
-fn borr(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Vec<usize> {
+pub(crate) fn borr(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Vec<usize> {
     register[c] = register[a] | register[b];
     register
 }
 
-fn bori(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Vec<usize> {
+pub(crate) fn bori(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Vec<usize> {
     register[c] = register[a] | b;
     register
 }
 
-fn setr(mut register: Vec<usize>, a: usize, _: usize, c: usize) -> Vec<usize> {
+pub(crate) fn setr(mut register: Vec<usize>, a: usize, _: usize, c: usize) -> Vec<usize> {
     register[c] = register[a];
     register
 }
 
-fn seti(mut register: Vec<usize>, a: usize, _: usize, c: usize) -> Vec<usize> {
+pub(crate) fn seti(mut register: Vec<usize>, a: usize, _: usize, c: usize) -> Vec<usize> {
     register[c] = a;
     register
 }
 
-fn gtir(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Vec<usize> {
+pub(crate) fn gtir(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Vec<usize> {
     if a > register[b] {
         register[c] = 1;
         return register;
@@ -65,7 +65,7 @@ fn gtir(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Vec<usize> {
     register
 }
 
-fn gtri(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Vec<usize> {
+pub(crate) fn gtri(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Vec<usize> {
     if register[a] > b {
         register[c] = 1;
         return register;
@@ -75,7 +75,7 @@ fn gtri(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Vec<usize> {
     register
 }
 
-fn gtrr(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Vec<usize> {
+pub(crate) fn gtrr(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Vec<usize> {
     if register[a] > register[b] {
         register[c] = 1;
         return register;
@@ -85,7 +85,7 @@ fn gtrr(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Vec<usize> {
     register
 }
 
-fn eqir(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Vec<usize> {
+pub(crate) fn eqir(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Vec<usize> {
     if a == register[b] {
         register[c] = 1;
         return register;
@@ -95,7 +95,7 @@ fn eqir(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Vec<usize> {
     register
 }
 
-fn eqri(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Vec<usize> {
+pub(crate) fn eqri(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Vec<usize> {
     if register[a] == b {
         register[c] = 1;
         return register;
@@ -105,7 +105,7 @@ fn eqri(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Vec<usize> {
     register
 }
 
-fn eqrr(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Vec<usize> {
+pub(crate) fn eqrr(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Vec<usize> {
     if register[a] == register[b] {
         register[c] = 1;
         return register;
@@ -115,10 +115,10 @@ fn eqrr(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Vec<usize> {
     register
 }
 
-fn main() -> Result<()> {
+fn main() -> (){
 
     let mut count = 0;
-    let lines: Vec<String> = BufReader::new(File::open("src/data/day_16_input.txt")?)
+    let lines: Vec<String> = BufReader::new(File::open("src/data/day_16_input.txt").unwrap())
                              .lines().map(|l| l.unwrap()).collect();
 
     let mut functions: Vec<fn(Vec<usize>, usize, usize, usize) -> Vec<usize>> = Vec::new();
@@ -215,9 +215,9 @@ fn main() -> Result<()> {
     let mut all_sets_empty = false;
 
     while !all_sets_empty {
-        for (k, mut v) in &mut possible_opcodes {
+        for (k, v) in &mut possible_opcodes {
             for code in &determined_opcodes {
-                &v.remove(&code);
+                let _ = &v.remove(&code);
             }
 
             if v.len() == 1 {
@@ -229,7 +229,7 @@ fn main() -> Result<()> {
         }
 
         all_sets_empty = true;
-        for (_, mut v) in &mut possible_opcodes {
+        for (_, v) in &mut possible_opcodes {
             if !v.is_empty() {
                 all_sets_empty = false;
             }
@@ -245,6 +245,4 @@ fn main() -> Result<()> {
     }
 
     println!("Part 2: {:?}", part2_register[0]);
-
-    Ok(())
 }
