@@ -36,7 +36,7 @@ fn main() -> Result<()>{
         let min_y = points.iter().map(|point| point.y).min().unwrap();
 
         for i in 0..len {
-            let mut p: &mut Point = &mut points[i];
+            let p: &mut Point = &mut points[i];
             let x = p.x - min_x;
             let y = p.y - min_y;
 
