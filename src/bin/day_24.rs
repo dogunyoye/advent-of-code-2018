@@ -59,10 +59,10 @@ fn battle(mut fighting_groups: Vec<FightingGroup>) -> (GroupType, u32) {
         let mut pending_attacks: Vec<(u32, FightingGroup, i32, FightingGroup, i32)> = Vec::new();
 
         for i in 0..num_of_groups {
-            let mut attacker = fighting_groups.get(i).unwrap();
+            let attacker = fighting_groups.get(i).unwrap();
             let fighter_dmg = attacker.effective_power;
 
-            let mut default = FightingGroup {
+            let default = FightingGroup {
                 group_type: GroupType::UNKNOWN,
                 num_of_units: 0,
                 hit_points: 0,
