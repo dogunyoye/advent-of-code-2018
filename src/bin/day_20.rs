@@ -56,10 +56,11 @@ fn move_position(dir: char, pos: &mut Position, map: &mut HashMap<Position, char
     }
 }
 
-fn dfs(map: &HashMap<Position, char>) -> usize {
+fn dfs(map: &HashMap<Position, char>, part_2: bool) -> usize {
     let start: Position = Position{i: 0, j: 0};
     let steps: usize = 0;
     let mut visited: HashSet<Position> = HashSet::new();
+    let mut rooms_count: usize = 0;
     let mut stack: Vec<(Position, usize)> = Vec::new();
     let mut max_steps = usize::MIN;
 
@@ -71,6 +72,10 @@ fn dfs(map: &HashMap<Position, char>) -> usize {
         if !visited.contains(&current_position) {
             visited.insert(current_position);
             max_steps = cmp::max(max_steps, current_steps);
+
+            if part_2 && current_steps >= 1000 {
+                rooms_count += 1;
+            }
 
             let neighbours = vec![(-1, 0), (0, 1), (1, 0), (0, -1)];
             for n in neighbours {
@@ -94,10 +99,21 @@ fn dfs(map: &HashMap<Position, char>) -> usize {
         }
     }
 
+    if part_2 {
+        return rooms_count;
+    }
+
     return max_steps;
 }
 
-fn explore_iterative(regex: &String) -> HashMap<Position, char> {
+fn explore_map() -> HashMap<Position, char> {
+    let mut regex: String = "".to_string();
+
+    for line in BufReader::new(File::open("src/data/day_20_input.txt").unwrap()).lines() {
+        regex = line.unwrap();
+        regex = regex[1..regex.len()-1].to_string();
+    }
+
     let mut map: HashMap<Position, char> = HashMap::new();
     let mut position = Position{i:0, j:0};
     let mut stack: Vec<Position> = Vec::new();
@@ -124,17 +140,14 @@ fn explore_iterative(regex: &String) -> HashMap<Position, char> {
 }
 
 fn find_largest_number_of_door_to_reach_a_room() -> usize {
-    let mut regex: String = "".to_string();
+    return dfs(&explore_map(), false);
+}
 
-    for line in BufReader::new(File::open("src/data/day_20_input.txt").unwrap()).lines() {
-        regex = line.unwrap();
-        regex = regex[1..regex.len()-1].to_string();
-    }
-
-    let map: HashMap<Position, char> = explore_iterative(&regex);
-    return dfs(&map);
+fn find_number_of_rooms_passing_through_at_least_1000_doors() -> usize {
+    return dfs(&explore_map(), true);
 }
 
 fn main() -> (){
     println!("Part 1: {}", find_largest_number_of_door_to_reach_a_room());
+    println!("Part 2: {}", find_number_of_rooms_passing_through_at_least_1000_doors());
 }
