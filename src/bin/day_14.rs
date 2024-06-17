@@ -79,7 +79,6 @@ fn part2() -> () {
                 let end = recipes.len()-1;
 
                 if &recipes[start..end] == sequence_vec {
-                    searching = false;
                     println!("Part 2: {}", recipes.len() - sequence.to_string().len() - 1);
                     break;
                 }
