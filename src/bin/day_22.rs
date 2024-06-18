@@ -70,13 +70,28 @@ impl Region {
 
 #[allow(unused)]
 fn print_map(grid: &Vec<Vec<Region>>, depth: usize, width: usize) {
-    for i in 0..width {
+    for i in 0..depth {
         let mut line = "".to_owned();
-        for j in 0..depth {
-            line.push(grid[j][i].region_char);
+        for j in 0..width {
+            line.push(grid[i][j].region_char);
         }
         println!("{}", line);
     }
+}
+
+fn translate_map(grid: &Vec<Vec<Region>>, depth: usize, width: usize) -> Vec<Vec<Region>> {
+    let default = Region { region_type: RegionType::Unknown, geologic_index: -1, erosion_level: -1, region_char: '?' };
+    let mut translated_grid: Vec<Vec<Region>> = vec![vec![default; depth]; width];
+
+    for i in 0..width {
+        let mut v: Vec<Region> = Vec::new();
+        for j in 0..depth {
+            v.push(grid[j][i].clone());
+        }
+        translated_grid[i] = v;
+    }
+
+    return translated_grid;
 }
 
 fn build_map(expanded_depth: Option<usize>, expanded_width: Option<usize>) -> (Vec<Vec<Region>>, usize, usize) {
@@ -184,7 +199,8 @@ fn calculate_total_risk_level() -> usize {
 
 fn find_fewest_number_of_minutes_to_reach_target() -> usize {
     let (grid, grid_depth, grid_width) = build_map(Some(5), Some(5));
-    print_map(&grid, grid_depth, grid_width);
+    let translated_map: Vec<Vec<Region>> = translate_map(&grid, grid_depth, grid_width);
+    print_map(&translated_map, grid_width, grid_depth);
     return 0;
 }
 
