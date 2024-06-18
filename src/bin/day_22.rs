@@ -116,7 +116,7 @@ fn build_map(expanded_depth: Option<usize>, expanded_width: Option<usize>) -> (V
     for x in 0..grid_width {
         for y in 0..grid_depth {
             if x == 0 && y == 0 {
-                grid[x][y].determine_region_type();
+                grid[y][x].determine_region_type();
                 continue;
             }
 
