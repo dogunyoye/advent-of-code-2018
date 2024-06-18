@@ -79,17 +79,6 @@ fn print_map(grid: &Vec<Vec<Region>>, depth: usize, width: usize) {
     }
 }
 
-fn normalise_map(grid: &Vec<Vec<Region>>, depth: usize, width: usize) -> Vec<Vec<Region>> {
-    let default = Region { region_type: RegionType::Unknown, geologic_index: -1, erosion_level: -1, region_char: '?' };
-    let mut normalised_grid: Vec<Vec<Region>> = vec![vec![default; width]; depth];
-    for i in 0..depth {
-        for j in 0..width {
-            normalised_grid[i][j] = grid[j][i].clone();
-        }
-    }
-    return normalised_grid;
-}
-
 fn build_map(expanded_depth: Option<usize>, expanded_width: Option<usize>) -> (Vec<Vec<Region>>, usize, usize) {
     let lines: Vec<String> = BufReader::new(File::open("src/data/day_22_input.txt").unwrap()).lines()
     .map(|l| l.unwrap()).collect();
@@ -195,7 +184,6 @@ fn calculate_total_risk_level() -> usize {
 
 fn find_fewest_number_of_minutes_to_reach_target() -> usize {
     let (grid, grid_depth, grid_width) = build_map(Some(5), Some(5));
-    //let normalised_grid = normalise_map(&grid, grid_depth, grid_width);
     print_map(&grid, grid_depth, grid_width);
     return 0;
 }
