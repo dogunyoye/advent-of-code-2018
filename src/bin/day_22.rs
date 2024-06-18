@@ -1,6 +1,6 @@
 //! `cargo run --bin day_22`
 
-use std::collections::{BinaryHeap, HashMap};
+use std::collections::{BinaryHeap, HashMap, HashSet};
 use std::fs::File;
 use std::hash::Hash;
 use std::io::{BufRead, BufReader};
@@ -22,7 +22,7 @@ enum Equipment {
 
 #[derive(Hash, PartialEq, Eq, Debug, Clone, Copy)]
 struct Climber {
-    equipment: Equipment,
+    equipped: Equipment,
     position: (i32, i32),
     cost: usize
 }
@@ -158,25 +158,89 @@ fn build_map(expanded_depth: Option<usize>, expanded_width: Option<usize>) -> (V
     return (grid, grid_depth, grid_width);
 }
 
-fn djikstra(grid: &Vec<Vec<Region>>, target: (i32, i32)) -> usize {
-    let mut frontier = BinaryHeap::new();
+fn is_position_valid(position: (i32, i32), depth: i32, width: i32) -> bool {
+    return !(position.0 < 0 || position.1 < 0 || position.0 >= depth || position.1 >= width);
+}
+
+fn inventory_options(terrain: char) -> HashSet<Equipment> {
+    let mut options: HashSet<Equipment> = HashSet::new();
+
+    match terrain {
+        '.' => {
+            options.insert(Equipment::ClimbingGear);
+            options.insert(Equipment::Torch);
+        },
+        '=' => {
+            options.insert(Equipment::ClimbingGear);
+            options.insert(Equipment::Empty);
+        },
+        '|' => {
+            options.insert(Equipment::Torch);
+            options.insert(Equipment::Empty);
+        },
+        _ => {
+            panic!("Unknown terrain: {}", terrain);
+        }
+    }
+
+    return options;
+}
+
+fn djikstra(grid: &Vec<Vec<Region>>, target: (i32, i32), depth: i32, width: i32) -> usize {
+    let mut frontier: BinaryHeap<Climber> = BinaryHeap::new();
     let mut cost_so_far: HashMap<(i32, i32), usize> = HashMap::new();
-    frontier.push(Climber{equipment: Equipment::Torch, position: (0, 0), cost: 0});
+
+    let initial_climber = Climber{equipped: Equipment::Torch, position: (0, 0), cost: 0};
+    frontier.push(initial_climber);
+    cost_so_far.insert(initial_climber.position, 0);
 
     while frontier.len() != 0 {
         let current_climber = frontier.pop().unwrap();
         if current_climber.position == target {
-            return *cost_so_far.get(&target).unwrap();
+            if current_climber.equipped != Equipment::Torch {
+                cost_so_far.insert(target, *cost_so_far.get(&target).unwrap() + 7);
+            }
+            println!("debug: {}", *cost_so_far.get(&target).unwrap());
         }
 
-        let neighbours = vec![(-1, 0), (0, 1), (1, 0), (0, -1)];
-        for n in neighbours {
-            let next_pos = (current_climber.position.0 + n.0, current_climber.position.1 + n.1);
+        let current_terrain = grid[current_climber.position.0 as usize][current_climber.position.1 as usize].region_char;
 
+        if current_climber.cost <= *cost_so_far.get(&current_climber.position).unwrap() {
+
+            let neighbours = vec![(-1, 0), (0, 1), (1, 0), (0, -1)];
+            for n in neighbours {
+                let next_pos = (current_climber.position.0 + n.0, current_climber.position.1 + n.1);
+                if is_position_valid(next_pos, depth, width) {
+                    let next_terrain = grid[next_pos.0 as usize][next_pos.1 as usize].region_char;
+                    let current_position_options = inventory_options(current_terrain);
+                    let next_position_options = inventory_options(next_terrain);
+    
+                    let equipable: Vec<&Equipment> = current_position_options.intersection(&next_position_options).collect();
+                    for e in equipable {
+                        let mut climber_clone = current_climber.clone();
+                        climber_clone.position = next_pos;
+
+                        let new_cost;
+                        if *e == climber_clone.equipped {
+                            new_cost = 1 + climber_clone.cost;
+                        }
+                        else {
+                            new_cost = 7 + climber_clone.cost;
+                            climber_clone.equipped = *e
+                        }
+    
+                        if !cost_so_far.contains_key(&climber_clone.position) || new_cost < *cost_so_far.get(&climber_clone.position).unwrap() {
+                            climber_clone.cost = new_cost;
+                            cost_so_far.insert(climber_clone.position, new_cost);
+                            frontier.push(climber_clone);
+                        }
+                    }
+                }
+            }
         }
     }
 
-    return 0;
+    return *cost_so_far.get(&target).unwrap();
 }
 
 fn calculate_total_risk_level() -> usize {
@@ -201,7 +265,7 @@ fn find_fewest_number_of_minutes_to_reach_target() -> usize {
     let (grid, grid_depth, grid_width) = build_map(Some(5), Some(5));
     let translated_map: Vec<Vec<Region>> = translate_map(&grid, grid_depth, grid_width);
     print_map(&translated_map, grid_width, grid_depth);
-    return 0;
+    return djikstra(&translated_map, (10, 10), grid_depth as i32, grid_width as i32);
 }
 
 fn main() -> (){
