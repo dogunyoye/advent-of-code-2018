@@ -1,7 +1,7 @@
 //! `cargo run --bin day_23`
 
 use std::fs::File;
-use std::io::{BufRead, BufReader, Result};
+use std::io::{BufRead, BufReader};
 
 #[derive(Debug, Clone)]
 struct Nanobot {
@@ -11,9 +11,12 @@ struct Nanobot {
     r: usize
 }
 
-fn main() -> Result<()> {
+fn manhattan_distance(first: &Nanobot, second: &Nanobot) -> i32 {
+    return (first.x - second.x as i32).abs() + (first.y - second.y as i32).abs() + (first.z - second.z as i32).abs();
+}
 
-    let lines: Vec<String> = BufReader::new(File::open("src/data/day_23_input.txt")?).lines()
+fn build_nanobots() -> (Vec<Nanobot>, Nanobot) {
+    let lines: Vec<String> = BufReader::new(File::open("src/data/day_23_input.txt").unwrap()).lines()
         .map(|l| l.unwrap()).collect();
 
     let mut nanobots: Vec<Nanobot> = Vec::new();
@@ -27,7 +30,8 @@ fn main() -> Result<()> {
         let radius = vec[1].replace("r=", "").parse::<usize>().unwrap();
 
         let pos_vec = replaced.split(",").collect::<Vec<&str>>();
-        let nanobot = Nanobot { x: pos_vec[0].parse::<i32>().unwrap(),
+        let nanobot = Nanobot {
+                                x: pos_vec[0].parse::<i32>().unwrap(),
                                 y: pos_vec[1].parse::<i32>().unwrap(),
                                 z: pos_vec[2].parse::<i32>().unwrap(),
                                 r: radius};
@@ -40,19 +44,26 @@ fn main() -> Result<()> {
         }
     }
 
+    return (nanobots, largest_radius_nanobot);
+}
+
+fn calculate_nanobots_in_range_of_largest() -> i32 {
+    let (nanobots, largest_radius_nanobot) = build_nanobots();
     let mut in_range = 0;
-
     for nanobot in nanobots {
-        let manhattan_distance = (nanobot.x - largest_radius_nanobot.x as i32).abs() +
-                                 (nanobot.y - largest_radius_nanobot.y as i32).abs() +
-                                 (nanobot.z - largest_radius_nanobot.z as i32).abs();
-
-        if manhattan_distance <= largest_radius_nanobot.r as i32 {
+        if manhattan_distance(&nanobot, &largest_radius_nanobot) <= largest_radius_nanobot.r as i32 {
             in_range += 1;
         }
     }
 
-    println!("Part one: {}", in_range);
+    return in_range; 
+}
 
-    Ok(())
+fn find_shortest_manhattan_distance_between_point_in_range_of_most_nanobots() -> i32 {
+    return 0;
+}
+
+fn main() -> (){
+    println!("Part one: {}", calculate_nanobots_in_range_of_largest());
+    println!("Part two: {}", find_shortest_manhattan_distance_between_point_in_range_of_most_nanobots());
 }
