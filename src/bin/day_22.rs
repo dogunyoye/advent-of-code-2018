@@ -210,12 +210,9 @@ fn djikstra(grid: &Vec<Vec<Region>>, target: (i32, i32), depth: i32, width: i32)
                         let mut climber_clone = current_climber.clone();
                         climber_clone.position = next_pos;
 
-                        let new_cost;
-                        if *e == climber_clone.equipped {
-                            new_cost = climber_clone.cost + 1;
-                        }
-                        else {
-                            new_cost = climber_clone.cost + 8;
+                        let mut new_cost = climber_clone.cost + 1;
+                        if *e != climber_clone.equipped {
+                            new_cost += 7;
                             climber_clone.equipped = *e
                         }
 
