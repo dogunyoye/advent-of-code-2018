@@ -94,15 +94,15 @@ fn translate_map(grid: &Vec<Vec<Region>>, depth: usize, width: usize) -> Vec<Vec
     return translated_grid;
 }
 
-fn build_map(expanded_depth: Option<usize>, expanded_width: Option<usize>) -> (Vec<Vec<Region>>, usize, usize) {
+fn build_map(expanded_depth: Option<usize>, expanded_width: Option<usize>) -> (Vec<Vec<Region>>, usize, usize, (i32, i32)) {
     let lines: Vec<String> = BufReader::new(File::open("src/data/day_22_input.txt").unwrap()).lines()
     .map(|l| l.unwrap()).collect();
 
     let depth_level: i32 = lines[0][7..lines[0].len()].parse::<i32>().unwrap();
     let target: String = lines[1][8..lines[1].len()].to_string();
 
-    let target_depth = target.split(",").collect::<Vec<&str>>()[0].parse::<usize>().unwrap() + 1;
-    let target_width = target.split(",").collect::<Vec<&str>>()[1].parse::<usize>().unwrap() + 1;
+    let target_depth: usize = target.split(",").collect::<Vec<&str>>()[0].parse::<usize>().unwrap() + 1;
+    let target_width: usize = target.split(",").collect::<Vec<&str>>()[1].parse::<usize>().unwrap() + 1;
 
     let mut grid_depth: usize = target_depth;
     let mut grid_width: usize = target_width;
@@ -155,7 +155,7 @@ fn build_map(expanded_depth: Option<usize>, expanded_width: Option<usize>) -> (V
         }
     }
 
-    return (grid, grid_depth, grid_width);
+    return (grid, grid_depth, grid_width, (target_width as i32 - 1, target_depth as i32 - 1));
 }
 
 fn is_position_valid(position: (i32, i32), depth: i32, width: i32) -> bool {
@@ -188,24 +188,29 @@ fn inventory_options(terrain: char) -> HashSet<Equipment> {
 
 fn djikstra(grid: &Vec<Vec<Region>>, target: (i32, i32), depth: i32, width: i32) -> usize {
     let mut frontier: BinaryHeap<Climber> = BinaryHeap::new();
-    let mut cost_so_far: HashMap<(i32, i32), usize> = HashMap::new();
+    let mut cost_so_far: HashMap<(Equipment, (i32, i32)), usize> = HashMap::new();
+    let mut result = usize::MAX;
 
     let initial_climber = Climber{equipped: Equipment::Torch, position: (0, 0), cost: 0};
     frontier.push(initial_climber);
-    cost_so_far.insert(initial_climber.position, 0);
+    cost_so_far.insert((Equipment::Torch, initial_climber.position), 0);
 
     while frontier.len() != 0 {
         let current_climber = frontier.pop().unwrap();
+        let current_state = (current_climber.equipped, current_climber.position);
+
         if current_climber.position == target {
             if current_climber.equipped != Equipment::Torch {
-                cost_so_far.insert(target, *cost_so_far.get(&target).unwrap() + 7);
+                result = std::cmp::min(result, *cost_so_far.get(&current_state).unwrap() + 7);
             }
-            println!("debug: {}", *cost_so_far.get(&target).unwrap());
+            else {
+                result = std::cmp::min(result, *cost_so_far.get(&current_state).unwrap());
+            }
         }
 
         let current_terrain = grid[current_climber.position.0 as usize][current_climber.position.1 as usize].region_char;
 
-        if current_climber.cost <= *cost_so_far.get(&current_climber.position).unwrap() {
+        if current_climber.cost <= *cost_so_far.get(&current_state).unwrap() {
 
             let neighbours = vec![(-1, 0), (0, 1), (1, 0), (0, -1)];
             for n in neighbours {
@@ -225,13 +230,15 @@ fn djikstra(grid: &Vec<Vec<Region>>, target: (i32, i32), depth: i32, width: i32)
                             new_cost = 1 + climber_clone.cost;
                         }
                         else {
-                            new_cost = 7 + climber_clone.cost;
+                            new_cost = 8 + climber_clone.cost;
                             climber_clone.equipped = *e
                         }
+
+                        let next_state = (climber_clone.equipped, climber_clone.position);
     
-                        if !cost_so_far.contains_key(&climber_clone.position) || new_cost < *cost_so_far.get(&climber_clone.position).unwrap() {
+                        if !cost_so_far.contains_key(&next_state) || new_cost < *cost_so_far.get(&next_state).unwrap() {
                             climber_clone.cost = new_cost;
-                            cost_so_far.insert(climber_clone.position, new_cost);
+                            cost_so_far.insert(next_state, new_cost);
                             frontier.push(climber_clone);
                         }
                     }
@@ -240,11 +247,11 @@ fn djikstra(grid: &Vec<Vec<Region>>, target: (i32, i32), depth: i32, width: i32)
         }
     }
 
-    return *cost_so_far.get(&target).unwrap();
+    return result;
 }
 
 fn calculate_total_risk_level() -> usize {
-    let (grid, depth, width) = build_map(None, None);
+    let (grid, depth, width, _) = build_map(None, None);
     let mut total_risk_level: usize = 0;
 
     for x in 0..width {
@@ -262,10 +269,9 @@ fn calculate_total_risk_level() -> usize {
 }
 
 fn find_fewest_number_of_minutes_to_reach_target() -> usize {
-    let (grid, grid_depth, grid_width) = build_map(Some(5), Some(5));
+    let (grid, grid_depth, grid_width, target) = build_map(Some(100), Some(100));
     let translated_map: Vec<Vec<Region>> = translate_map(&grid, grid_depth, grid_width);
-    print_map(&translated_map, grid_width, grid_depth);
-    return djikstra(&translated_map, (10, 10), grid_depth as i32, grid_width as i32);
+    return djikstra(&translated_map, target, grid_width as i32, grid_depth as i32);
 }
 
 fn main() -> (){
