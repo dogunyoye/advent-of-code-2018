@@ -163,27 +163,12 @@ fn is_position_valid(position: (i32, i32), depth: i32, width: i32) -> bool {
 }
 
 fn inventory_options(terrain: char) -> HashSet<Equipment> {
-    let mut options: HashSet<Equipment> = HashSet::new();
-
     match terrain {
-        '.' => {
-            options.insert(Equipment::ClimbingGear);
-            options.insert(Equipment::Torch);
-        },
-        '=' => {
-            options.insert(Equipment::ClimbingGear);
-            options.insert(Equipment::Empty);
-        },
-        '|' => {
-            options.insert(Equipment::Torch);
-            options.insert(Equipment::Empty);
-        },
-        _ => {
-            panic!("Unknown terrain: {}", terrain);
-        }
+        '.' => return HashSet::from([Equipment::ClimbingGear, Equipment::Torch]),
+        '=' => return HashSet::from([Equipment::ClimbingGear, Equipment::Empty]),
+        '|' => return HashSet::from([Equipment::Torch, Equipment::Empty]),
+        _ => panic!("Unknown terrain: {}", terrain)
     }
-
-    return options;
 }
 
 fn djikstra(grid: &Vec<Vec<Region>>, target: (i32, i32), depth: i32, width: i32) -> usize {
@@ -227,15 +212,14 @@ fn djikstra(grid: &Vec<Vec<Region>>, target: (i32, i32), depth: i32, width: i32)
 
                         let new_cost;
                         if *e == climber_clone.equipped {
-                            new_cost = 1 + climber_clone.cost;
+                            new_cost = climber_clone.cost + 1;
                         }
                         else {
-                            new_cost = 8 + climber_clone.cost;
+                            new_cost = climber_clone.cost + 8;
                             climber_clone.equipped = *e
                         }
 
                         let next_state = (climber_clone.equipped, climber_clone.position);
-    
                         if !cost_so_far.contains_key(&next_state) || new_cost < *cost_so_far.get(&next_state).unwrap() {
                             climber_clone.cost = new_cost;
                             cost_so_far.insert(next_state, new_cost);
