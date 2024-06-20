@@ -79,6 +79,7 @@ fn print_map(grid: &Vec<Vec<Region>>, depth: usize, width: usize) {
     }
 }
 
+// reorientate the map in accordance with the example
 fn translate_map(grid: &Vec<Vec<Region>>, depth: usize, width: usize) -> Vec<Vec<Region>> {
     let default = Region { region_type: RegionType::Unknown, geologic_index: -1, erosion_level: -1, region_char: '?' };
     let mut translated_grid: Vec<Vec<Region>> = vec![vec![default; depth]; width];
@@ -128,30 +129,30 @@ fn build_map(expanded_depth: Option<usize>, expanded_width: Option<usize>) -> (V
         region_char: 'T'
     };
 
-    for x in 0..grid_width {
-        for y in 0..grid_depth {
+    for x in 0..grid_depth {
+        for y in 0..grid_width {
             if x == 0 && y == 0 {
-                grid[y][x].determine_region_type();
+                grid[x][y].determine_region_type();
                 continue;
             }
 
-            if y == target_depth-1 && x == target_width-1 {
-                grid[y][x].determine_region_type();
+            if x == target_depth-1 && y == target_width-1 {
+                grid[x][y].determine_region_type();
                 continue;
             }
 
-            if y == 0 {
-                grid[y][x].geologic_index = (x * 48271) as i32;
+            if x == 0 {
+                grid[x][y].geologic_index = (y * 48271) as i32;
             }
-            else if x == 0 {
-                grid[y][x].geologic_index = (y * 16807) as i32;
+            else if y == 0 {
+                grid[x][y].geologic_index = (x * 16807) as i32;
             }
             else {
-                grid[y][x].geologic_index = grid[y-1][x].erosion_level * grid[y][x-1].erosion_level;
+                grid[x][y].geologic_index = grid[x-1][y].erosion_level * grid[x][y-1].erosion_level;
             }
 
-            grid[y][x].erosion_level = (grid[y][x].geologic_index + depth_level) % 20183;
-            grid[y][x].determine_region_type();
+            grid[x][y].erosion_level = (grid[x][y].geologic_index + depth_level) % 20183;
+            grid[x][y].determine_region_type();
         }
     }
 
@@ -235,9 +236,9 @@ fn calculate_total_risk_level() -> usize {
     let (grid, depth, width, _) = build_map(None, None);
     let mut total_risk_level: usize = 0;
 
-    for x in 0..width {
-        for y in 0..depth {
-            match grid[y][x].region_type {
+    for x in 0..depth {
+        for y in 0..width {
+            match grid[x][y].region_type {
                 RegionType::Rocky => {},
                 RegionType::Wet => total_risk_level += 1,
                 RegionType::Narrow => total_risk_level += 2,
