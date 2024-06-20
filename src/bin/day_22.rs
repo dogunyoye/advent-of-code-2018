@@ -179,7 +179,7 @@ fn djikstra(grid: &Vec<Vec<Region>>, target: (i32, i32), depth: i32, width: i32)
 
     let initial_climber = Climber{equipped: Equipment::Torch, position: (0, 0), cost: 0};
     frontier.push(initial_climber);
-    cost_so_far.insert((Equipment::Torch, initial_climber.position), 0);
+    cost_so_far.insert((initial_climber.equipped, initial_climber.position), 0);
 
     while frontier.len() != 0 {
         let current_climber = frontier.pop().unwrap();
@@ -194,11 +194,10 @@ fn djikstra(grid: &Vec<Vec<Region>>, target: (i32, i32), depth: i32, width: i32)
             }
         }
 
-        let current_terrain = grid[current_climber.position.0 as usize][current_climber.position.1 as usize].region_char;
-
         if current_climber.cost <= *cost_so_far.get(&current_state).unwrap() {
-
+            let current_terrain = grid[current_climber.position.0 as usize][current_climber.position.1 as usize].region_char;
             let neighbours = vec![(-1, 0), (0, 1), (1, 0), (0, -1)];
+
             for n in neighbours {
                 let next_pos = (current_climber.position.0 + n.0, current_climber.position.1 + n.1);
                 if is_position_valid(next_pos, depth, width) {
@@ -206,8 +205,8 @@ fn djikstra(grid: &Vec<Vec<Region>>, target: (i32, i32), depth: i32, width: i32)
                     let current_position_options = inventory_options(current_terrain);
                     let next_position_options = inventory_options(next_terrain);
     
-                    let equipable: Vec<&Equipment> = current_position_options.intersection(&next_position_options).collect();
-                    for e in equipable {
+                    let equippable: Vec<&Equipment> = current_position_options.intersection(&next_position_options).collect();
+                    for e in equippable {
                         let mut climber_clone = current_climber.clone();
                         climber_clone.position = next_pos;
 
