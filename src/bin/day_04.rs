@@ -23,7 +23,7 @@ fn main() -> Result<()>{
     }
 
     guard_log.sort_by_key(|a|
-        NaiveDateTime::parse_from_str(&a[1..17], "%Y-%m-%d %H:%M").unwrap().timestamp());
+        NaiveDateTime::parse_from_str(&a[1..17], "%Y-%m-%d %H:%M").unwrap().and_utc().timestamp());
 
     let mut current_guard_id = String::new();
     let mut current_sleep_time = String::new();
@@ -108,13 +108,13 @@ fn main() -> Result<()>{
         }
     }
 
-    println!("Part 1 - Most frequent count: {} times, on minute {} from {}", most_frequent, minute_val, sleepiest_guard);
+    println!("Part 2: {}", (minute_val * sleepiest_guard[7..].parse::<i32>().unwrap()));
 
     for val in minutes_map.values_mut() {
         *val = 0;
     }
 
-    let mut guard = String::new();
+    let mut guard = 0;
     let mut max = 0;
     let mut minute = 0;
 
@@ -153,7 +153,7 @@ fn main() -> Result<()>{
             if v > &max {
                 minute = *k;
                 max = *v;
-                guard = key.to_string();
+                guard = key[7..].to_string().parse::<i32>().unwrap();
             }
         }
 
@@ -162,7 +162,7 @@ fn main() -> Result<()>{
         }
     }
 
-    println!("Part 2 - Most frequent sleeping minute: {}, from {}", minute, guard);
+    println!("Part 2: {}", (minute * guard));
 
     Ok(())
 }
