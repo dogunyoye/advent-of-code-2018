@@ -115,6 +115,7 @@ pub(crate) fn eqrr(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Ve
     register
 }
 
+#[allow(dead_code)]
 fn main() -> (){
 
     let mut count = 0;
