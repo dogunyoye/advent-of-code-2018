@@ -1,5 +1,7 @@
 //! `cargo run --bin day_14`
 
+use std::fs::{self};
+
 #[derive(Debug)]
 struct Elf {
     score: u32,
@@ -21,7 +23,8 @@ fn part1() -> () {
     recipes.push(elf1.score);
     recipes.push(elf2.score);
 
-    let count = 540391;
+    let input = fs::read_to_string("src/data/day_14_input.txt").unwrap();
+    let count = input.parse::<usize>().unwrap();
 
     while recipes.len() < count + 10 {
         let sum = elf1.score + elf2.score;
@@ -54,12 +57,8 @@ fn part2() -> () {
     recipes.push(elf1.score);
     recipes.push(elf2.score);
 
-    let sequence = "540391";
-    //let sequence = "01245";
-    //let sequence = "59414";
+    let sequence = fs::read_to_string("src/data/day_14_input.txt").unwrap();
     let sequence_vec = &[5, 4, 0, 3, 9, 1];
-    //let sequence_vec = &[0, 1, 2, 4, 5];
-    //let sequence_vec = &[5, 9, 4, 1, 4];
     let mut searching = true;
 
     while searching {
