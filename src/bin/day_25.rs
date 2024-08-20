@@ -3,7 +3,7 @@
 extern crate petgraph;
 
 use std::fs::File;
-use std::io::{BufRead, BufReader, Result};
+use std::io::{BufRead, BufReader};
 use std::collections::HashSet;
 use petgraph::unionfind::UnionFind;
 
@@ -15,19 +15,21 @@ struct Point {
     z: i32
 }
 
-fn main() -> Result<()>{
-    let mut points: Vec<(Point, HashSet<usize>)> = Vec::new();
+fn main() -> (){
+    let mut points: Vec<Point> = Vec::new();
 
-    for line in BufReader::new(File::open("src/data/day_25_input.txt")?).lines() {
+    for line in BufReader::new(File::open("src/data/day_25_input.txt").unwrap()).lines() {
         let data = line.unwrap();
         let coords = data.split(",").collect::<Vec<&str>>();
 
-        let point = Point { w: coords[0].parse::<i32>().unwrap(),
-                            x: coords[1].parse::<i32>().unwrap(),
-                            y: coords[2].parse::<i32>().unwrap(),
-                            z: coords[3].parse::<i32>().unwrap()};
+        let point = Point {
+            w: coords[0].parse::<i32>().unwrap(),
+            x: coords[1].parse::<i32>().unwrap(),
+            y: coords[2].parse::<i32>().unwrap(),
+            z: coords[3].parse::<i32>().unwrap()
+        };
 
-        points.push((point, HashSet::new()));
+        points.push(point);
     }
 
     let mut u: UnionFind<usize> = UnionFind::new(points.len());
@@ -35,11 +37,11 @@ fn main() -> Result<()>{
     for i in 0..points.len() {
         for j in i+1..points.len() {
 
-            let p1: (Point, HashSet<usize>) = points[i].clone();
-            let p2: (Point, HashSet<usize>) = points[j].clone();
+            let p1: Point = points[i].clone();
+            let p2: Point = points[j].clone();
 
-            let manhattan_distance = (p1.0.w - p2.0.w).abs() + (p1.0.x - p2.0.x).abs() +
-                                          (p1.0.y - p2.0.y as i32).abs() + (p1.0.z - p2.0.z).abs();
+            let manhattan_distance = (p1.w - p2.w).abs() + (p1.x - p2.x).abs() +
+                                          (p1.y - p2.y).abs() + (p1.z - p2.z).abs();
 
             if manhattan_distance <= 3 {
                 u.union(i, j);
@@ -55,6 +57,4 @@ fn main() -> Result<()>{
     }
 
     println!("Part one: {}", set.len());
-
-    Ok(())
 }
