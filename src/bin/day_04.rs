@@ -3,12 +3,12 @@
 extern crate chrono;
 
 use std::fs::File;
-use std::io::{BufRead, BufReader, Result};
+use std::io::{BufRead, BufReader};
 use std::collections::HashMap;
 
 use chrono::{NaiveTime, NaiveDateTime};
 
-fn main() -> Result<()>{
+fn main() -> (){
 
     let mut guard_log = Vec::new();
     let mut guards_sleep_map: HashMap<String, i64> = HashMap::new();
@@ -18,8 +18,8 @@ fn main() -> Result<()>{
         minutes_map.insert(i, 0);
     }
 
-    for line in BufReader::new(File::open("src/data/day_4_input.txt")?).lines() {
-        guard_log.push(line?.to_string());
+    for line in BufReader::new(File::open("src/data/day_4_input.txt").unwrap()).lines() {
+        guard_log.push(line.unwrap().to_string());
     }
 
     guard_log.sort_by_key(|a|
@@ -163,6 +163,4 @@ fn main() -> Result<()>{
     }
 
     println!("Part 2: {}", (minute * guard));
-
-    Ok(())
 }

@@ -1,9 +1,9 @@
 //! `cargo run --bin day_02`
 
 use std::fs::File;
-use std::io::{BufRead, BufReader, Result};
+use std::io::{BufRead, BufReader};
 
-fn main() -> Result<()> {
+fn main() -> (){
     let mut twos_count = 0;
     let mut threes_count = 0;
 
@@ -12,7 +12,7 @@ fn main() -> Result<()> {
 
     let mut lines_vec: Vec<String> = Vec::new();
 
-    for line in BufReader::new(File::open("src/data/day_2_input.txt")?).lines() {
+    for line in BufReader::new(File::open("src/data/day_2_input.txt").unwrap()).lines() {
         let line = line.unwrap();
         let mut chars = line.chars();
 
@@ -81,6 +81,4 @@ fn main() -> Result<()> {
             break;
         }
     }
-
-    Ok(())
 }

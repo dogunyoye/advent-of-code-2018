@@ -1,7 +1,7 @@
 //! `cargo run --bin day_08`
 
 use std::fs::File;
-use std::io::{BufRead, BufReader, Result};
+use std::io::{BufRead, BufReader};
 use std::slice::Iter;
 
 #[derive(Clone, Debug)]
@@ -49,11 +49,11 @@ fn calculate_value(node: &mut Node, sum: &mut usize) -> () {
     }
 }
 
-fn main() -> Result<()>{
+fn main() -> (){
 
     let mut tree_data: Vec<usize> = Vec::new();
 
-    for line in BufReader::new(File::open("src/data/day_8_input.txt")?).lines() {
+    for line in BufReader::new(File::open("src/data/day_8_input.txt").unwrap()).lines() {
         let line = line.unwrap();
         let data = line.split_whitespace().collect::<Vec<&str>>();
         for x in data {
@@ -72,6 +72,4 @@ fn main() -> Result<()>{
     calculate_value(&mut root, &mut part2_sum);
 
     println!("Part 2: {}", part2_sum);
-
-    Ok(())
 }

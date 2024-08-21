@@ -1,7 +1,7 @@
 //! `cargo run --bin day_10`
 
 use std::fs::File;
-use std::io::{BufRead, BufReader, Result};
+use std::io::{BufRead, BufReader};
 
 #[derive(Clone)]
 struct Point {
@@ -11,11 +11,11 @@ struct Point {
     y_velocity: i32
 }
 
-fn main() -> Result<()>{
+fn main() -> (){
 
     let mut points: Vec<Point> = Vec::new();
 
-    for line in BufReader::new(File::open("src/data/day_10_input.txt")?).lines() {
+    for line in BufReader::new(File::open("src/data/day_10_input.txt").unwrap()).lines() {
         let data = line.unwrap().replace("position=", "").replace("velocity=", "")
             .replace(">", ""). replace("<", "").replace(",", "");
 
@@ -82,6 +82,4 @@ fn main() -> Result<()>{
 
     println!();
     println!("Part two: {} secs", count);
-
-    Ok(())
 }

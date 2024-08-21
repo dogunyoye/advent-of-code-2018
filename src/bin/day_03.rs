@@ -1,16 +1,16 @@
 //! `cargo run --bin day_03`
 
 use std::fs::File;
-use std::io::{BufRead, BufReader, Result};
+use std::io::{BufRead, BufReader};
 use std::collections::HashSet;
 
-fn main() -> Result<()>{
+fn main() -> (){
 
     let mut grid = vec![vec!["#".to_string(); 1000]; 1000];
 
     let mut claim_ids_set = HashSet::new();
 
-    for line in BufReader::new(File::open("src/data/day_3_input.txt")?).lines() {
+    for line in BufReader::new(File::open("src/data/day_3_input.txt").unwrap()).lines() {
         let split_vec = line.unwrap().split("@").collect::<Vec<&str>>().iter().map(|&x| x.to_owned()).collect::<Vec<String>>();
 
         claim_ids_set.insert(split_vec.get(0).unwrap().trim().to_string());
@@ -62,6 +62,4 @@ fn main() -> Result<()>{
     for i in claim_ids_set.drain() {
         println!("Part 2: {}", i);
     }
-
-    Ok(())
 }

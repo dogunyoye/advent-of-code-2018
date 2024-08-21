@@ -1,7 +1,7 @@
 //! `cargo run --bin day_09`
 
 use std::fs::File;
-use std::io::{BufRead, BufReader, Result};
+use std::io::{BufRead, BufReader};
 use std::collections::HashMap;
 use std::collections::VecDeque;
 use std::cmp;
@@ -66,12 +66,12 @@ fn play_game(players: i32, number_of_marbles: i64) -> i64 {
     winning_score
 }
 
-fn main() -> Result<()>{
+fn main() -> (){
 
     let mut players: i32 = 0;
     let mut last_marble_points: i64 = 0;
 
-    for line in BufReader::new(File::open("src/data/day_9_input.txt")?).lines() {
+    for line in BufReader::new(File::open("src/data/day_9_input.txt").unwrap()).lines() {
         let line = line.unwrap();
         let data = line.split(" ").collect::<Vec<&str>>();
 
@@ -81,6 +81,4 @@ fn main() -> Result<()>{
 
     println!("Part 1: {}", play_game(players, last_marble_points));
     println!("Part 2: {}", play_game(players, last_marble_points * 100));
-
-    Ok(())
 }

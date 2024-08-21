@@ -3,7 +3,7 @@
 mod day_16;
 
 use std::fs::File;
-use std::io::{BufRead, BufReader, Result};
+use std::io::{BufRead, BufReader};
 use std::collections::HashMap;
 use std::collections::HashSet;
 
@@ -87,7 +87,7 @@ fn part2(operations: &HashMap<String, fn(Vec<usize>, usize, usize, usize) -> Vec
     println!("Part 2: {}", last);
 }
 
-fn main() -> Result<()> {
+fn main() -> (){
 
     let mut lines: Vec<String> = BufReader::new(File::open("src/data/day_21_input.txt").unwrap())
         .lines().map(|l| l.unwrap()).collect();
@@ -128,6 +128,4 @@ fn main() -> Result<()> {
 
     part1(&operations, &program, instruction_pointer_index);
     part2(&operations, &program, instruction_pointer_index);
-
-    Ok(())
 }

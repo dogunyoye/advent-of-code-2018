@@ -1,7 +1,7 @@
 //! `cargo run --bin day_06`
 
 use std::fs::File;
-use std::io::{BufRead, BufReader, Result};
+use std::io::{BufRead, BufReader};
 use std::collections::HashMap;
 use std::cmp;
 
@@ -19,7 +19,7 @@ struct Occupation {
     can_be_occupied: bool
 }
 
-fn main() -> Result<()>{
+fn main() -> (){
 
     let mut largest_y = 0;
     let mut largest_x = 0;
@@ -28,7 +28,7 @@ fn main() -> Result<()>{
     let mut coords_map: HashMap<String, Point> = HashMap::new();
     let mut coords_area: HashMap<String, i32> = HashMap::new();
 
-    for line in BufReader::new(File::open("src/data/day_6_input.txt")?).lines() {
+    for line in BufReader::new(File::open("src/data/day_6_input.txt").unwrap()).lines() {
         let coord_vec = line.unwrap().split(",").collect::<Vec<&str>>().iter().map(|&x| x.to_owned()).collect::<Vec<String>>();
         let name_of_point = format!("Point{}", i);
 
@@ -119,6 +119,4 @@ fn main() -> Result<()>{
     }
 
     println!("Part 2: {}", region_total);
-
-    Ok(())
 }

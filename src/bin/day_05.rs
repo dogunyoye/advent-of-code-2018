@@ -1,15 +1,15 @@
 //! `cargo run --bin day_05`
 
 use std::fs::File;
-use std::io::{BufRead, BufReader, Result};
+use std::io::{BufRead, BufReader};
 use std::collections::VecDeque;
 
-fn main() -> Result<()>{
+fn main() -> (){
     let mut input_string: String = String::new();
     let mut result = VecDeque::new();
 
-    for line in BufReader::new(File::open("src/data/day_5_input.txt")?).lines() {
-        input_string = line?.to_string();
+    for line in BufReader::new(File::open("src/data/day_5_input.txt").unwrap()).lines() {
+        input_string = line.unwrap().to_string();
     }
 
     let mut chars = input_string.chars();
@@ -72,14 +72,11 @@ fn main() -> Result<()>{
         let size = result.len();
         if smallest == 0 ||  size < smallest {
             smallest = size;
-            smallest_queue.push_front(format!("Smallest {}, letters {}/{}", smallest, i as u8 as char, (i + 32) as u8 as char));
+            smallest_queue.push_front(smallest);
         }
 
         result.clear();
     }
 
     println!("Part 2: {}", smallest_queue.pop_front().unwrap());
-
-
-    Ok(())
 }

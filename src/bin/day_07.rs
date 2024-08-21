@@ -1,7 +1,7 @@
 //! `cargo run --bin day_07`
 
 use std::fs::File;
-use std::io::{BufRead, BufReader, Result};
+use std::io::{BufRead, BufReader};
 use std::collections::{HashMap, HashSet};
 use std::collections::VecDeque;
 
@@ -26,14 +26,14 @@ impl Worker {
     }
 }
 
-fn main() -> Result<()>{
+fn main() -> (){
 
     let mut dependencies_map: HashMap<char, Vec<char>> = HashMap::new();
     let mut dependencies_counter_map: HashMap<char, i32> = HashMap::new();
 
     let mut order: VecDeque<char> = VecDeque::new();
 
-    for line in BufReader::new(File::open("src/data/day_7_input.txt")?).lines() {
+    for line in BufReader::new(File::open("src/data/day_7_input.txt").unwrap()).lines() {
         let line = line.unwrap();
         let mut chars = line.chars();
         let dependent: char = chars.nth(5).unwrap();
@@ -184,6 +184,4 @@ fn main() -> Result<()>{
     }
 
     println!("Part 2: {}", time_taken);
-
-    Ok(())
 }
