@@ -224,16 +224,14 @@ fn octree_scan(cube: Cube, nanobots: &Vec<Nanobot>) -> usize {
                     shortest_distance_from_origin = manhattan_distance((0, 0, 0), current_cube.centre);
                 }
             }
-
-            continue;
-        }
-
-        let cubes = current_cube.split();
-        for c in cubes {
-            let in_range = nanobots_in_range_of_cube(nanobots, c);
-            if in_range > 0 {
-                let distance = manhattan_distance(c.centre, (0, 0, 0));
-                pq.push(CubeState{cube: c, bots_in_range: in_range, distance_to_start: distance});
+        } else {
+            let cubes = current_cube.split();
+            for c in cubes {
+                let in_range = nanobots_in_range_of_cube(nanobots, c);
+                if in_range > 0 {
+                    let distance = manhattan_distance(c.centre, (0, 0, 0));
+                    pq.push(CubeState{cube: c, bots_in_range: in_range, distance_to_start: distance});
+                }
             }
         }
     }
