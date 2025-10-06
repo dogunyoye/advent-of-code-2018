@@ -1,7 +1,7 @@
 //! `cargo run --bin day_23`
 
 use std::cmp::Ordering;
-use std::collections::{BinaryHeap, HashSet};
+use std::collections::BinaryHeap;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
@@ -89,28 +89,28 @@ fn manhattan_distance(a: (i32, i32, i32), b: (i32, i32, i32)) -> usize {
 }
 
 fn nanobots_in_range_of_cube(nanobots: &Vec<Nanobot>, mut cube: Cube) -> usize {
-    let mut bots_in_range: HashSet<Nanobot> = HashSet::new();
+    let mut bots_in_range: usize = 0;
     for nanobot in nanobots {
         let nanobot_position = (nanobot.x, nanobot.y, nanobot.z);
         for c in &cube.corners() {
             if nanobot.r >= manhattan_distance(nanobot_position, *c) {
-                bots_in_range.insert(nanobot.clone());
+                bots_in_range += 1;
                 break; 
             }
         }
     }
-    return bots_in_range.len();
+    return bots_in_range;
 }
 
 fn nanobots_in_range_of_point(nanobots: &Vec<Nanobot>, point: (i32, i32, i32)) -> usize {
-    let mut bots_in_range: HashSet<Nanobot> = HashSet::new();
+    let mut bots_in_range: usize = 0;
     for nanobot in nanobots {
         let nanobot_position = (nanobot.x, nanobot.y, nanobot.z);
         if nanobot.r >= manhattan_distance(nanobot_position, point) {
-            bots_in_range.insert(nanobot.clone());
+            bots_in_range += 1;
         }
     }
-    return bots_in_range.len();
+    return bots_in_range;
 }
 
 fn build_cube(bounds: Vec<i32>) -> Cube {
