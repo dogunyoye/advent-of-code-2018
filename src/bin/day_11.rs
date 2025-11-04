@@ -1,3 +1,5 @@
+//! `cargo run --bin day_11`
+
 fn power_level_fn(x: i32, y: i32, grid_serial_number: i32) -> i32 {
 
     let mut power_level: i32;
@@ -23,12 +25,21 @@ fn main() -> (){
     let mut largest_grid: String = String::new();
     let grid_size = 300;
 
-    let mut grid = vec![vec![0; grid_size]; grid_size];
+    let mut grid = vec![vec![0; grid_size + 1]; grid_size + 1];
+    let mut sat = vec![vec![0; grid_size + 1]; grid_size + 1];
+
+    for y in 1..grid_size + 1 {
+        for x in 1..grid_size + 1 {
+            let power_level = power_level_fn(x as i32, y as i32, grid_serial_number);
+            grid[x][y] = power_level;
+        }
+    }
 
     for x in 1..grid_size + 1 {
+        let mut row_sum: i32 = 0;
         for y in 1..grid_size + 1 {
-            let power_level = power_level_fn(x as i32, y as i32, grid_serial_number);
-            grid[(x-1) as usize][(y-1) as usize] = power_level;
+            row_sum += grid[x][y];
+            sat[x][y] = sat[x-1][y] + row_sum;
         }
     }
 
@@ -40,7 +51,7 @@ fn main() -> (){
 
             if power_level > max_power_level {
                 max_power_level = power_level;
-                cell = format!("x: {}, y: {}", x+1, y+1);
+                cell = format!("x: {}, y: {}", x, y);
             }
         }
     }
@@ -49,25 +60,38 @@ fn main() -> (){
 
     max_power_level = 0;
 
-    for dimension in 2..grid_size + 1 {
-        for x in 0..grid_size - dimension {
-            for y in 0..grid_size - dimension {
-                let mut power_level = 0;
-                for i in 0..dimension {
-                    for j in 0..dimension {
-                        power_level += grid[x+i][y+j];
-                    }
-                }
+    // for dimension in 2..grid_size {
+    //     for x in 0..grid_size - dimension {
+    //         for y in 0..grid_size - dimension {
+    //             let mut power_level = 0;
+    //             for i in 0..dimension {
+    //                 for j in 0..dimension {
+    //                     power_level += grid[x+i][y+j];
+    //                 }
+    //             }
 
-                if power_level > max_power_level {
-                    max_power_level = power_level;
-                    largest_grid = format!("x: {}, y: {}, dimension: {}", x+1, y+1, dimension);
-                    // super duper hacky solution..
-                    // this loop won't terminate for a very long time, so to work out the answer
-                    // I print out the current largest grid data (x,y,dimension) and observe stdout
-                    // until the value stays consistent => we've reached the maximum...
-                    // This should be implemented properly to most likely use a Summed Table Area
-                    //println!("Part 2: new max.. largest {}", largest_grid);
+    //             if power_level > max_power_level {
+    //                 max_power_level = power_level;
+    //                 largest_grid = format!("x: {}, y: {}, dimension: {}", x, y, dimension);
+    //                 // super duper hacky solution..
+    //                 // this loop won't terminate for a very long time, so to work out the answer
+    //                 // I print out the current largest grid data (x,y,dimension) and observe stdout
+    //                 // until the value stays consistent => we've reached the maximum...
+    //                 // This should be implemented properly to most likely use a Summed Table Area
+    //                 println!("Part 2: new max.. largest {}", largest_grid);
+    //             }
+    //         }
+    //     }
+    // }
+
+    for d in 2..grid_size {
+        for x in 1..grid_size - d + 1 {
+            for y in 1..grid_size - d + 1 {
+                // https://en.wikipedia.org/wiki/Summed-area_table#The_algorithm
+                let total = sat[x-1][y-1] + sat[x+d-1][y+d-1] - sat[x-1][y+d-1] - sat[x+d-1][y-1];
+                if total > max_power_level {
+                    max_power_level = total;
+                    largest_grid = format!("x: {}, y: {}, dimension: {}", x, y, d);
                 }
             }
         }
