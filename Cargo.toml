@@ -6,3 +6,4 @@ authors = ["Dimeji Ogunyoye <dogunyoye@googlemail.com>"]
 [dependencies]
 chrono = "0.4.6"
 petgraph = "0.6.5"
+regex = "1.12.2"

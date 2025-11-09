@@ -1,7 +1,13 @@
 //! `cargo run --bin day_24`
 
+extern crate regex;
+
 use std::cmp::Ordering;
 use std::f64;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
+
+use regex::Regex;
 
 #[derive(Debug, Clone, PartialEq)]
 enum AttackType {
@@ -34,10 +40,64 @@ struct FightingGroup {
 }
 
 impl FightingGroup {
-
     fn calculate_effective_power(&mut self) {
         self.effective_power = self.num_of_units * self.attack_points;
     }
+}
+
+fn convert_to_attack_type(attack_str: &str) -> AttackType {
+    match attack_str.trim() {
+        "radiation" => return AttackType::RADIATION,
+        "bludgeoning" => return AttackType::BLUDGEONING,
+        "fire" => return AttackType::FIRE,
+        "slashing" => return AttackType::SLASHING,
+        "cold" => return AttackType::COLD,
+        _ => return AttackType::UNKNOWN
+    }
+}
+
+fn parse_fighting_group(line: &str, group_type: &GroupType) -> Option<FightingGroup> {
+
+    let spec: Regex = Regex::new(
+        r"(?x)
+        (?P<units>\d+)\s+units\s+each\s+with\s+
+        (?P<hp>\d+)\s+hit\s+points
+        (?:\s+\((?P<attrs>[^)]+)\))?
+        \s+with\s+an\s+attack\s+that\s+does\s+
+        (?P<damage>\d+)\s+
+        (?P<damage_type>\w+)\s+damage\s+
+        at\s+initiative\s+(?P<initiative>\d+)"
+    ).unwrap();
+
+    if let Some(caps) = spec.captures(line) {
+        let mut weaknesses: Vec<AttackType> = Vec::new();
+        let mut immunities: Vec<AttackType> = Vec::new();
+
+        if let Some(attrs) = caps.name("attrs") {
+            for part in attrs.as_str().split(';') {
+                let part = part.trim();
+                if let Some(rest) = part.strip_prefix("weak to ") {
+                    weaknesses.extend(rest.split(',').map(convert_to_attack_type));
+                } else if let Some(rest) = part.strip_prefix("immune to ") {
+                    immunities.extend(rest.split(',').map(convert_to_attack_type));
+                }
+            }
+        }
+
+        return Option::Some(FightingGroup {
+            group_type: group_type.clone(),
+            num_of_units: caps["units"].parse().unwrap(),
+            hit_points: caps["hp"].parse().unwrap(),
+            weaknesses: weaknesses,
+            immunities: immunities,
+            attack_type: convert_to_attack_type(&caps["damage_type"].to_string()),
+            attack_points: caps["damage"].parse().unwrap(),
+            effective_power: 0,
+            initiative: caps["initiative"].parse().unwrap(),
+        });
+    }
+
+    return Option::None
 }
 
 fn battle(mut fighting_groups: Vec<FightingGroup>) -> (GroupType, u32) {
@@ -184,7 +244,6 @@ fn battle(mut fighting_groups: Vec<FightingGroup>) -> (GroupType, u32) {
 
         // get rid of the groups with no fighters
         fighting_groups.retain(|ref i|i.num_of_units > 0 );
-        //println!("HELP {:?}", fighting_groups);
 
         let mut all_same_type = false;
         for x in 0..fighting_groups.len() {
@@ -225,277 +284,33 @@ fn battle(mut fighting_groups: Vec<FightingGroup>) -> (GroupType, u32) {
 }
 
 fn main() -> () {
-
-    let immune0 = FightingGroup {
-        group_type: GroupType::IMMUNE,
-        num_of_units: 89,
-        hit_points: 11269,
-        weaknesses: vec![AttackType::FIRE, AttackType::RADIATION],
-        immunities: vec![],
-        attack_type: AttackType::SLASHING,
-        attack_points: 1018,
-        effective_power: 0,
-        initiative: 7
-    };
-
-    let immune1 = FightingGroup {
-        group_type: GroupType::IMMUNE,
-        num_of_units: 371,
-        hit_points: 8033,
-        weaknesses: vec![],
-        immunities: vec![],
-        attack_type: AttackType::BLUDGEONING,
-        attack_points: 204,
-        effective_power: 0,
-        initiative: 15
-    };
-
-    let immune2 = FightingGroup {
-        group_type: GroupType::IMMUNE,
-        num_of_units: 86,
-        hit_points: 12112,
-        weaknesses: vec![AttackType::COLD],
-        immunities: vec![AttackType::SLASHING, AttackType::BLUDGEONING],
-        attack_type: AttackType::SLASHING,
-        attack_points: 1110,
-        effective_power: 0,
-        initiative: 18
-    };
-
-    let immune3 = FightingGroup {
-        group_type: GroupType::IMMUNE,
-        num_of_units: 4137,
-        hit_points: 10451,
-        weaknesses: vec![AttackType::SLASHING],
-        immunities: vec![AttackType::RADIATION],
-        attack_type: AttackType::SLASHING,
-        attack_points: 20,
-        effective_power: 0,
-        initiative: 11
-    };
-
-    let immune4 = FightingGroup {
-        group_type: GroupType::IMMUNE,
-        num_of_units: 3374,
-        hit_points: 6277,
-        weaknesses: vec![AttackType::SLASHING, AttackType::COLD],
-        immunities: vec![],
-        attack_type: AttackType::COLD,
-        attack_points: 13,
-        effective_power: 0,
-        initiative: 10
-    };
-
-    let immune5 = FightingGroup {
-        group_type: GroupType::IMMUNE,
-        num_of_units: 1907,
-        hit_points: 1530,
-        weaknesses: vec![AttackType::RADIATION],
-        immunities: vec![AttackType::FIRE, AttackType::BLUDGEONING],
-        attack_type: AttackType::FIRE,
-        attack_points: 7,
-        effective_power: 0,
-        initiative: 9
-    };
-
-    let immune6 = FightingGroup {
-        group_type: GroupType::IMMUNE,
-        num_of_units: 1179,
-        hit_points: 6638,
-        weaknesses: vec![AttackType::SLASHING, AttackType::BLUDGEONING],
-        immunities: vec![AttackType::RADIATION],
-        attack_type: AttackType::FIRE,
-        attack_points: 49,
-        effective_power: 0,
-        initiative: 20
-    };
-
-    let immune7 = FightingGroup {
-        group_type: GroupType::IMMUNE,
-        num_of_units: 4091,
-        hit_points: 7627,
-        weaknesses: vec![],
-        immunities: vec![],
-        attack_type: AttackType::BLUDGEONING,
-        attack_points: 17,
-        effective_power: 0,
-        initiative: 17
-    };
-
-    let immune8 = FightingGroup {
-        group_type: GroupType::IMMUNE,
-        num_of_units: 6318,
-        hit_points: 7076,
-        weaknesses: vec![],
-        immunities: vec![],
-        attack_type: AttackType::BLUDGEONING,
-        attack_points: 8,
-        effective_power: 0,
-        initiative: 2
-    };
-
-    let immune9 = FightingGroup {
-        group_type: GroupType::IMMUNE,
-        num_of_units: 742,
-        hit_points: 1702,
-        weaknesses: vec![AttackType::RADIATION],
-        immunities: vec![AttackType::SLASHING],
-        attack_type: AttackType::RADIATION,
-        attack_points: 22,
-        effective_power: 0,
-        initiative: 13
-    };
-
-    let infection0 = FightingGroup {
-        group_type: GroupType::INFECTION,
-        num_of_units: 3401,
-        hit_points: 31843,
-        weaknesses: vec![AttackType::COLD, AttackType::FIRE],
-        immunities: vec![],
-        attack_type: AttackType::SLASHING,
-        attack_points: 16,
-        effective_power: 0,
-        initiative: 19
-    };
-
-    let infection1 = FightingGroup {
-        group_type: GroupType::INFECTION,
-        num_of_units: 1257,
-        hit_points: 10190,
-        weaknesses: vec![],
-        immunities: vec![],
-        attack_type: AttackType::COLD,
-        attack_points: 16,
-        effective_power: 0,
-        initiative: 8
-    };
-
-    let infection2 = FightingGroup {
-        group_type: GroupType::INFECTION,
-        num_of_units: 2546,
-        hit_points: 49009,
-        weaknesses: vec![AttackType::BLUDGEONING, AttackType::RADIATION],
-        immunities: vec![AttackType::COLD],
-        attack_type: AttackType::BLUDGEONING,
-        attack_points: 38,
-        effective_power: 0,
-        initiative: 6
-    };
-
-    let infection3 = FightingGroup {
-        group_type: GroupType::INFECTION,
-        num_of_units: 2593,
-        hit_points: 12475,
-        weaknesses: vec![],
-        immunities: vec![],
-        attack_type: AttackType::COLD,
-        attack_points: 9,
-        effective_power: 0,
-        initiative: 1
-    };
-
-    let infection4 = FightingGroup {
-        group_type: GroupType::INFECTION,
-        num_of_units: 2194,
-        hit_points: 25164,
-        weaknesses: vec![AttackType::BLUDGEONING],
-        immunities: vec![AttackType::COLD],
-        attack_type: AttackType::BLUDGEONING,
-        attack_points: 18,
-        effective_power: 0,
-        initiative: 14
-    };
-
-    let infection5 = FightingGroup {
-        group_type: GroupType::INFECTION,
-        num_of_units: 8250,
-        hit_points: 40519,
-        weaknesses: vec![AttackType::BLUDGEONING, AttackType::RADIATION],
-        immunities: vec![AttackType::SLASHING],
-        attack_type: AttackType::BLUDGEONING,
-        attack_points: 8,
-        effective_power: 0,
-        initiative: 16
-    };
-
-    let infection6 = FightingGroup {
-        group_type: GroupType::INFECTION,
-        num_of_units: 1793,
-        hit_points: 51817,
-        weaknesses: vec![],
-        immunities: vec![AttackType::BLUDGEONING],
-        attack_type: AttackType::RADIATION,
-        attack_points: 46,
-        effective_power: 0,
-        initiative: 3
-    };
-
-    let infection7 = FightingGroup {
-        group_type: GroupType::INFECTION,
-        num_of_units: 288,
-        hit_points: 52213,
-        weaknesses: vec![],
-        immunities: vec![AttackType::BLUDGEONING],
-        attack_type: AttackType::FIRE,
-        attack_points: 339,
-        effective_power: 0,
-        initiative: 4
-    };
-
-    let infection8 = FightingGroup {
-        group_type: GroupType::INFECTION,
-        num_of_units: 22,
-        hit_points: 38750,
-        weaknesses: vec![AttackType::FIRE],
-        immunities: vec![],
-        attack_type: AttackType::SLASHING,
-        attack_points: 3338,
-        effective_power: 0,
-        initiative: 5
-    };
-
-    let infection9 = FightingGroup {
-        group_type: GroupType::INFECTION,
-        num_of_units: 2365,
-        hit_points: 25468,
-        weaknesses: vec![AttackType::RADIATION, AttackType::COLD],
-        immunities: vec![],
-        attack_type: AttackType::FIRE,
-        attack_points: 20,
-        effective_power: 0,
-        initiative: 12
-    };
-
     let mut fighting_groups: Vec<FightingGroup> = Vec::new();
-    fighting_groups.push(immune0.clone());
-    fighting_groups.push(immune1.clone());
-    fighting_groups.push(immune2.clone());
-    fighting_groups.push(immune3.clone());
-    fighting_groups.push(immune4.clone());
-    fighting_groups.push(immune5.clone());
-    fighting_groups.push(immune6.clone());
-    fighting_groups.push(immune7.clone());
-    fighting_groups.push(immune8.clone());
-    fighting_groups.push(immune9.clone());
+    let mut group_type = GroupType::IMMUNE;
+ 
+    for line in BufReader::new(File::open("src/data/day_24_input.txt").unwrap()).lines() {
+        let line = line.unwrap();
+        if line.is_empty() {
+            continue;
+        }
 
-    fighting_groups.push(infection0.clone());
-    fighting_groups.push(infection1.clone());
-    fighting_groups.push(infection2.clone());
-    fighting_groups.push(infection3.clone());
-    fighting_groups.push(infection4.clone());
-    fighting_groups.push(infection5.clone());
-    fighting_groups.push(infection6.clone());
-    fighting_groups.push(infection7.clone());
-    fighting_groups.push(infection8.clone());
-    fighting_groups.push(infection9.clone());
+        if line.starts_with("Immune System:") {
+            group_type = GroupType::IMMUNE;
+            continue;
+        } else if line.starts_with("Infection:") {
+            group_type = GroupType::INFECTION;
+            continue;
+        }
 
-    for x in 0..fighting_groups.len() {
-        fighting_groups[x].calculate_effective_power();
+        fighting_groups.push(parse_fighting_group(&line, &group_type).unwrap());
+    }
+
+    for fg in &mut fighting_groups {
+        fg.calculate_effective_power();
     }
 
     let fighting_groups_part2 = fighting_groups.clone();
 
-    println!("Part one: {:?}", battle(fighting_groups));
+    println!("Part one: {:?}", battle(fighting_groups).1);
 
     let mut boost = 1;
     loop {
@@ -508,7 +323,7 @@ fn main() -> () {
 
         let result = battle(immune_boosted_fighters);
         if result.0 == GroupType::IMMUNE {
-            println!("Part two: {:?}", result);
+            println!("Part two: {:?}", result.1);
             break;
         }
 
