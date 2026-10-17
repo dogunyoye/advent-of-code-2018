@@ -1,6 +1,6 @@
 //! `cargo run --bin day_15`
 
-use std::{borrow::BorrowMut, cmp::Ordering, collections::{HashMap, HashSet, VecDeque}, fs::File, io::{BufRead, BufReader}};
+use std::{cmp::Ordering, collections::{HashMap, HashSet, VecDeque}, fs::File, io::{BufRead, BufReader}};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum OccupantType {
@@ -366,7 +366,7 @@ fn find_outcome_of_battle(mut arena: HashMap<Position, Occupant>, part_2: bool) 
 
         for (_, combatant) in combatants.iter_mut() {
             if !killed.contains(&combatant.id) {
-                let (combat_ended, defeated_combatant) = combatant.move_or_attack(arena.borrow_mut());
+                let (combat_ended, defeated_combatant) = combatant.move_or_attack(&mut arena);
 
                 if let Some(defeated) = defeated_combatant {
                     if part_2

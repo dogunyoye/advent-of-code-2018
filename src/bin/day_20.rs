@@ -8,28 +8,6 @@ struct Position {
     j: i32
 }
 
-#[allow(unused)]
-fn print_map(map: &HashMap<Position, char>) {
-    let min_j = map.keys().map(|p| p.j).min().unwrap();
-    let max_j = map.keys().map(|p| p.j).max().unwrap();
-    let min_i = map.keys().map(|p| p.i).min().unwrap();
-    let max_i = map.keys().map(|p| p.i).max().unwrap();
-
-    for i in min_i - 1..max_i + 2 {
-        let mut line = "".to_owned();
-        for j in min_j - 1..max_j + 2 {
-            let p = Position{i, j};
-            if map.get(&p).is_some() {
-                line.push(*map.get(&p).unwrap());
-            }
-            else {
-                line.push('#');
-            }
-        }
-        println!("{}", line);
-    }
-}
-
 fn move_position(dir: char, pos: &mut Position, map: &mut HashMap<Position, char>) {
     match dir {
         'N' => {

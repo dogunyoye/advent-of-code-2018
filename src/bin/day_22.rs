@@ -68,14 +68,6 @@ impl Region {
     }
 }
 
-#[allow(unused)]
-fn print_map(grid: &[Vec<Region>], depth: usize, width: usize) {
-    for row in grid.iter().take(depth) {
-        let line: String = row.iter().take(width).map(|region| region.region_char).collect();
-        println!("{}", line);
-    }
-}
-
 // reorientate the map in accordance with the example
 fn translate_map(grid: &[Vec<Region>], depth: usize, width: usize) -> Vec<Vec<Region>> {
     (0..width)
@@ -148,8 +140,8 @@ fn build_map(expanded_depth: Option<usize>, expanded_width: Option<usize>) -> (V
     (grid, grid_depth, grid_width, (target_width as i32 - 1, target_depth as i32 - 1))
 }
 
-fn is_position_valid(position: (i32, i32), depth: i32, width: i32) -> bool {
-    !(position.0 < 0 || position.1 < 0 || position.0 >= depth || position.1 >= width)
+fn is_position_valid(position: (i32, i32), x_bound: i32, y_bound: i32) -> bool {
+    !(position.0 < 0 || position.1 < 0 || position.0 >= x_bound || position.1 >= y_bound)
 }
 
 fn inventory_options(terrain: char) -> HashSet<Equipment> {
@@ -161,7 +153,7 @@ fn inventory_options(terrain: char) -> HashSet<Equipment> {
     }
 }
 
-fn djikstra(grid: &[Vec<Region>], target: (i32, i32), depth: i32, width: i32) -> usize {
+fn djikstra(grid: &[Vec<Region>], target: (i32, i32), x_bound: i32, y_bound: i32) -> usize {
     let mut frontier: BinaryHeap<Climber> = BinaryHeap::new();
     let mut cost_so_far: HashMap<(Equipment, (i32, i32)), usize> = HashMap::new();
     let mut result = usize::MAX;
@@ -189,7 +181,7 @@ fn djikstra(grid: &[Vec<Region>], target: (i32, i32), depth: i32, width: i32) ->
 
             for n in neighbours {
                 let next_pos = (current_climber.position.0 + n.0, current_climber.position.1 + n.1);
-                if is_position_valid(next_pos, depth, width) {
+                if is_position_valid(next_pos, x_bound, y_bound) {
                     let next_terrain = grid[next_pos.0 as usize][next_pos.1 as usize].region_char;
                     let current_position_options = inventory_options(current_terrain);
                     let next_position_options = inventory_options(next_terrain);

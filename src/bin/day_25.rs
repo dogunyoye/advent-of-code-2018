@@ -1,7 +1,5 @@
 //! `cargo run --bin day_25`
 
-extern crate petgraph;
-
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::collections::HashSet;

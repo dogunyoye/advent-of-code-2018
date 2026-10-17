@@ -14,13 +14,10 @@ fn main(){
 
     for line in BufReader::new(File::open("src/data/day_2_input.txt").unwrap()).lines() {
         let line = line.unwrap();
-        let mut chars = line.chars();
 
         lines_vec.push(line.clone());
 
-        let mut i = 0;
-        while i < line.len() {
-            let curr_char = chars.next().unwrap();
+        for curr_char in line.chars() {
             let v: Vec<&str> = line.matches(curr_char).collect();
 
             if v.len() == 2 && !found_two {
@@ -31,7 +28,6 @@ fn main(){
                 threes_count += 1;
                 found_three = true;
             }
-            i += 1;
         }
 
         found_two = false;
@@ -50,10 +46,7 @@ fn main(){
         for j in i+1..lines_vec.len() {
             let next_line = lines_vec.get(j).unwrap();
 
-            for k in 0..curr_line.len() {
-                let c1 = curr_line.chars().nth(k).unwrap();
-                let c2 = next_line.chars().nth(k).unwrap();
-
+            for (k, (c1, c2)) in curr_line.chars().zip(next_line.chars()).enumerate() {
                 if c1 != c2  {
                     mismatch_count += 1;
                     mismatch_index = k;

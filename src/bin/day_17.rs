@@ -1,34 +1,12 @@
 //! `cargo run --bin day_17`
 
-use std::{borrow::BorrowMut, collections::{HashMap, VecDeque}, fs::File, io::{BufRead, BufReader, LineWriter, Write}};
+use std::{collections::{HashMap, VecDeque}, fs::File, io::{BufRead, BufReader}};
 
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 struct Position {
     i: i32,
     j: i32
-}
-
-#[allow(unused)]
-fn print_map(map: &HashMap<Position, char>) {
-    let min_j = map.keys().map(|p| p.j).min().unwrap();
-    let max_j = map.keys().map(|p| p.j).max().unwrap();
-    let min_i = map.keys().map(|p| p.i).min().unwrap();
-    let max_i = map.keys().map(|p| p.i).max().unwrap();
-
-    let file = File::create("day17_debug_part1.txt").unwrap();
-    let mut file = LineWriter::new(file);
-
-    for i in min_i..max_i + 1 {
-        let mut line = "".to_owned();
-        for j in min_j..max_j + 1 {
-            let p = Position{i, j};
-            line.push(*map.get(&p).unwrap())
-        }
-
-        file.write_all(line.as_bytes());
-        file.write_all(b"\n");
-    }
 }
 
 fn build_map() -> (HashMap<Position, char>, i32, i32) {
@@ -48,10 +26,10 @@ fn build_map() -> (HashMap<Position, char>, i32, i32) {
 
             
             let axis_vec: &mut Vec<i32> = if *axis == "x" {
-                xs.borrow_mut()
+                &mut xs
             }
             else {
-                ys.borrow_mut()
+                &mut ys
             };
 
             if axis_val.contains("..") {
@@ -134,7 +112,6 @@ fn fill_row(pos: Position, map: &mut HashMap<Position, char>) -> Vec<Position> {
             overflow = true;
             break;
         }
-        left.push(Position{i, j: left_j});
         left_j -= 1;
     }
 

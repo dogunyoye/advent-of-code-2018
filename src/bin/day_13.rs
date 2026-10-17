@@ -126,23 +126,6 @@ fn build_track_data() -> (HashMap<Position, char>, HashMap<Position, char>, Vec<
     (track_map, initial_map, carts)
 }
 
-#[allow(unused)]
-fn print_map(track_map: HashMap<Position, char>) {
-    let max_depth = track_map.keys().map(|p| p.i).max().unwrap();
-    let max_width = track_map.keys().map(|p| p.j).max().unwrap();
-
-    for i in 0..max_depth + 1 {
-        let mut line = "".to_owned();
-        for j in 0..max_width + 1 {
-            let p = Position { i, j };
-            if track_map.contains_key(&p) {
-                line.push(*track_map.get(&p).unwrap());
-            }
-        }
-        println!("{}", line);
-    }
-}
-
 fn cart_sort_fn(a: &Cart, b: &Cart) -> Ordering {
     if a.pos.i > b.pos.i {
         return Ordering::Greater;

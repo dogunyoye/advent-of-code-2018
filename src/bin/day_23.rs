@@ -50,11 +50,11 @@ struct Cube {
 
 impl Cube {
 
-    fn is_unit_cube(&mut self) -> bool {
+    fn is_unit_cube(&self) -> bool {
         ((self.max_x - self.min_x) <= 1) && ((self.max_y - self.min_y) <= 1) && ((self.max_z - self.min_z) <= 1)
     }
 
-    fn split(&mut self) -> Vec<Cube> {
+    fn split(&self) -> Vec<Cube> {
         let middle_x = (self.min_x + self.max_x)/2;
         let middle_y = (self.min_y + self.max_y)/2;
         let middle_z = (self.min_z + self.max_z)/2;
@@ -71,7 +71,7 @@ impl Cube {
         vec![c0, c1, c2, c3, c4, c5, c6, c7]
     }
 
-    fn corners(&mut self) -> Vec<(i32, i32, i32)> {
+    fn corners(&self) -> Vec<(i32, i32, i32)> {
         let mut corners: Vec<(i32, i32, i32)> = Vec::new();
         for x in [self.min_x, self.max_x] {
             for y in [self.min_y, self.max_y] {
@@ -88,7 +88,7 @@ fn manhattan_distance(a: (i32, i32, i32), b: (i32, i32, i32)) -> usize {
     ((a.0 - b.0).abs() + (a.1 - b.1).abs() + (a.2 - b.2).abs()) as usize
 }
 
-fn nanobots_in_range_of_cube(nanobots: &[Nanobot], mut cube: Cube) -> usize {
+fn nanobots_in_range_of_cube(nanobots: &[Nanobot], cube: Cube) -> usize {
     let mut bots_in_range: usize = 0;
     for nanobot in nanobots {
         let nanobot_position = (nanobot.x, nanobot.y, nanobot.z);
@@ -208,7 +208,7 @@ fn octree_scan(cube: Cube, nanobots: &[Nanobot]) -> usize {
 
     while !pq.is_empty() {
         let current_cube_state = pq.pop().unwrap();
-        let mut current_cube = current_cube_state.cube;
+        let current_cube = current_cube_state.cube;
         
         if current_cube_state.bots_in_range < most_nanobots_in_range {
             continue;
