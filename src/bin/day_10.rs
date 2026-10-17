@@ -29,7 +29,7 @@ fn main(){
 
     loop {
         let mut grid = vec![vec!['.'; grid_size]; grid_size];
-        let mut all_points_in_sight = false;
+        let mut all_points_in_sight = true;
 
         let min_x = points.iter().map(|point| point.x).min().unwrap();
         let min_y = points.iter().map(|point| point.y).min().unwrap();
@@ -38,9 +38,8 @@ fn main(){
             let x = p.x - min_x;
             let y = p.y - min_y;
 
-            if x < grid_size as i32  && y < grid_size as i32 {
+            if x >= 0 && x < grid_size as i32 && y >= 0 && y < grid_size as i32 {
                 grid[x as usize][y as usize] = '#';
-                all_points_in_sight = true;
             }
             else {
                 all_points_in_sight = false;

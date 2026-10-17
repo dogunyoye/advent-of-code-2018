@@ -58,7 +58,8 @@ fn part2() {
     recipes.push(elf2.score);
 
     let sequence = fs::read_to_string("src/data/day_14_input.txt").unwrap();
-    let sequence_vec = &[5, 4, 0, 3, 9, 1];
+    let sequence = sequence.trim();
+    let sequence_vec: Vec<u32> = sequence.chars().map(|c| c.to_digit(10).unwrap()).collect();
     let mut searching = true;
 
     while searching {
@@ -70,29 +71,25 @@ fn part2() {
             recipes.push(digit);
         }
 
-        if recipes.len() > sequence.len() {
+        if recipes.len() > sequence_vec.len() {
 
             if sum_string.len() == 2 {
 
-                let start = recipes.len() - sequence.len() - 1;
-                let end = recipes.len()-1;
+                let start = recipes.len() - sequence_vec.len() - 1;
+                let end = recipes.len() - 1;
 
-                if &recipes[start..end] == sequence_vec {
-                    println!("Part 2: {}", recipes.len() - sequence.to_string().len() - 1);
-                    break;
-                }
-
-                if !searching {
+                if recipes[start..end] == sequence_vec[..] {
+                    println!("Part 2: {}", recipes.len() - sequence_vec.len() - 1);
                     break;
                 }
             }
 
-            let start = recipes.len() - sequence.len();
+            let start = recipes.len() - sequence_vec.len();
             let end = recipes.len();
 
-            if &recipes[start..end] == sequence_vec {
+            if recipes[start..end] == sequence_vec[..] {
                 searching = false;
-                println!("Part 2: {}", recipes.len() - sequence.to_string().len());
+                println!("Part 2: {}", recipes.len() - sequence_vec.len());
             }
         }
 

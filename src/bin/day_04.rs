@@ -1,7 +1,5 @@
 //! `cargo run --bin day_04`
 
-extern crate chrono;
-
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::collections::HashMap;
@@ -14,7 +12,7 @@ fn main(){
     let mut guards_sleep_map: HashMap<String, i64> = HashMap::new();
     let mut minutes_map: HashMap<i32, i32> = HashMap::new();
 
-    for i in 0..59 {
+    for i in 0..60 {
         minutes_map.insert(i, 0);
     }
 
@@ -53,9 +51,8 @@ fn main(){
 
             let total_sleep = NaiveTime::parse_from_str(wake_up_time, "%H:%M").unwrap() - NaiveTime::parse_from_str(&current_sleep_time, "%H:%M").unwrap();
 
-            let cloned_map = guards_sleep_map.clone();
-            let total_guard_sleep_time = cloned_map.get(&current_guard_id);
-            guards_sleep_map.insert(current_guard_id.to_string(), total_guard_sleep_time.unwrap() + total_sleep.num_minutes());
+            let total_guard_sleep_time = *guards_sleep_map.get(&current_guard_id).unwrap();
+            guards_sleep_map.insert(current_guard_id.to_string(), total_guard_sleep_time + total_sleep.num_minutes());
         }
     }
 
@@ -90,10 +87,7 @@ fn main(){
             let guard_wakeup = &wake_up_time[3..5].parse::<i32>().unwrap();
 
             for i in *guard_sleep..*guard_wakeup {
-                let cloned_map = minutes_map.clone();
-                let count = cloned_map.get(&i);
-                let incremented = count.unwrap() + 1;
-                minutes_map.insert(i, incremented);
+                *minutes_map.entry(i).or_insert(0) += 1;
             }
         }
     }
@@ -108,7 +102,7 @@ fn main(){
         }
     }
 
-    println!("Part 2: {}", (minute_val * sleepiest_guard[7..].parse::<i32>().unwrap()));
+    println!("Part 1: {}", (minute_val * sleepiest_guard[7..].parse::<i32>().unwrap()));
 
     for val in minutes_map.values_mut() {
         *val = 0;
@@ -141,10 +135,7 @@ fn main(){
                 let guard_wakeup: &i32 = &wake_up_time[3..5].parse::<i32>().unwrap();
 
                 for i in *guard_sleep..*guard_wakeup {
-                    let cloned_map = minutes_map.clone();
-                    let count = cloned_map.get(&i);
-                    let incremented = count.unwrap() + 1;
-                    minutes_map.insert(i, incremented);
+                    *minutes_map.entry(i).or_insert(0) += 1;
                 }
             }
         }

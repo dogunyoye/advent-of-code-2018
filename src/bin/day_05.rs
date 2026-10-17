@@ -12,26 +12,16 @@ fn main(){
         input_string = line.unwrap().to_string();
     }
 
-    let mut chars = input_string.chars();
-
-    for i in 0..input_string.len() {
-
-        let c = chars.next().unwrap();
-
-        if i == 0 || result.is_empty() {
-            result.push_front(c);
-            continue;
+    for c in input_string.chars() {
+        if let Some(prev_char) = result.front().copied() {
+            if (c.is_uppercase() && c.to_ascii_lowercase() == prev_char) ||
+                (c.is_lowercase() && c.to_ascii_uppercase() == prev_char) {
+                result.pop_front();
+                continue;
+            }
         }
 
-        let prev_char = *result.front().unwrap();
-
-        if (c.is_uppercase() && c.to_ascii_lowercase() == prev_char) ||
-            (c.is_lowercase() && c.to_ascii_uppercase() == prev_char) {
-            result.pop_front();
-        }
-        else {
-            result.push_front(c);
-        }
+        result.push_front(c);
     }
 
     println!("Part 1: {:?}", result.len());
@@ -39,44 +29,32 @@ fn main(){
     result.clear();
 
     let mut smallest = 0;
-    let mut smallest_queue = VecDeque::new();
 
-    for i in 65..90 {
-        let mut chars_iter = input_string.chars();
-
-        for j in 0..input_string.len() {
-
-            let c = chars_iter.next().unwrap();
-
-            if j == 0 || result.is_empty() {
-                result.push_front(c);
-                continue;
-            }
-
-            let prev_char = *result.front().unwrap();
-
+    for i in 65..=90 {
+        for c in input_string.chars() {
             if c as u8 == i || c as u8 == i + 32 {
-                // skip
+                // skip this unit type
                 continue;
             }
 
-            if (c.is_uppercase() && c.to_ascii_lowercase() == prev_char) ||
-                (c.is_lowercase() && c.to_ascii_uppercase() == prev_char) {
-                result.pop_front();
+            if let Some(prev_char) = result.front().copied() {
+                if (c.is_uppercase() && c.to_ascii_lowercase() == prev_char) ||
+                    (c.is_lowercase() && c.to_ascii_uppercase() == prev_char) {
+                    result.pop_front();
+                    continue;
+                }
             }
-            else {
-                result.push_front(c);
-            }
+
+            result.push_front(c);
         }
 
         let size = result.len();
-        if smallest == 0 ||  size < smallest {
+        if smallest == 0 || size < smallest {
             smallest = size;
-            smallest_queue.push_front(smallest);
         }
 
         result.clear();
     }
 
-    println!("Part 2: {}", smallest_queue.pop_front().unwrap());
+    println!("Part 2: {}", smallest);
 }

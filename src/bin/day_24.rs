@@ -1,9 +1,6 @@
 //! `cargo run --bin day_24`
 
-extern crate regex;
-
 use std::cmp::Ordering;
-use std::f64;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
@@ -310,10 +307,11 @@ fn main() {
     let mut boost = 1;
     loop {
         let mut immune_boosted_fighters = fighting_groups_part2.clone();
-        for i in 0..10 {
-            let imm = immune_boosted_fighters.get_mut(i).unwrap();
-            imm.attack_points += boost;
-            imm.calculate_effective_power();
+        for fg in immune_boosted_fighters.iter_mut() {
+            if fg.group_type == GroupType::Immune {
+                fg.attack_points += boost;
+                fg.calculate_effective_power();
+            }
         }
 
         let result = battle(immune_boosted_fighters);
