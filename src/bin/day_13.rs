@@ -8,7 +8,7 @@ use std::io::{BufRead, BufReader};
 #[derive(Debug, Eq, Hash, PartialEq, Copy, Clone)]
 struct Position {
     i: usize,
-    j: usize
+    j: usize,
 }
 
 #[derive(Debug, Eq, Hash, PartialEq, Copy, Clone)]
@@ -16,25 +16,24 @@ struct Cart {
     id: usize,
     pos: Position,
     facing: char,
-    intersections: usize
+    intersections: usize,
 }
 
 impl Cart {
-
     fn turn_left(&mut self) {
         match self.facing {
             '>' => {
                 self.facing = '^';
-            },
+            }
             'v' => {
                 self.facing = '>';
-            },
+            }
             '<' => {
                 self.facing = 'v';
-            },
+            }
             '^' => {
                 self.facing = '<';
-            },
+            }
             _ => {
                 panic!("invalid cart character: {}", self.facing);
             }
@@ -45,16 +44,16 @@ impl Cart {
         match self.facing {
             '>' => {
                 self.facing = 'v';
-            },
+            }
             'v' => {
                 self.facing = '<';
-            },
+            }
             '<' => {
                 self.facing = '^';
-            },
+            }
             '^' => {
                 self.facing = '>';
-            },
+            }
             _ => {
                 panic!("invalid cart character: {}", self.facing);
             }
@@ -68,32 +67,54 @@ fn build_track_data() -> (HashMap<Position, char>, HashMap<Position, char>, Vec<
     let mut carts: Vec<Cart> = Vec::new();
 
     let mut cart_id: usize = 0;
-    for (i, line) in BufReader::new(File::open("src/data/day_13_input.txt").unwrap()).lines().enumerate() {
-        let row = line.unwrap();
-        for (j, b) in row.bytes().enumerate() {
+    for (i, line) in BufReader::new(File::open("src/data/day_13_input.txt").unwrap())
+        .lines()
+        .enumerate()
+    {
+        for (j, b) in line.unwrap().bytes().enumerate() {
             let c = b as char;
-            let position = Position{i, j};
+            let position = Position { i, j };
             match c {
                 '>' => {
                     initial_map.insert(position, '-');
-                    carts.push(Cart{id: cart_id, pos: position, facing: '>', intersections: 0});
+                    carts.push(Cart {
+                        id: cart_id,
+                        pos: position,
+                        facing: '>',
+                        intersections: 0,
+                    });
                     cart_id += 1;
-                },
+                }
                 'v' => {
                     initial_map.insert(position, '|');
-                    carts.push(Cart{id: cart_id, pos: position, facing: 'v', intersections: 0});
+                    carts.push(Cart {
+                        id: cart_id,
+                        pos: position,
+                        facing: 'v',
+                        intersections: 0,
+                    });
                     cart_id += 1;
-                },
+                }
                 '<' => {
                     initial_map.insert(position, '-');
-                    carts.push(Cart{id: cart_id, pos: position, facing: '<', intersections: 0});
+                    carts.push(Cart {
+                        id: cart_id,
+                        pos: position,
+                        facing: '<',
+                        intersections: 0,
+                    });
                     cart_id += 1;
-                },
+                }
                 '^' => {
                     initial_map.insert(position, '|');
-                    carts.push(Cart{id: cart_id, pos: position, facing: '^', intersections: 0});
+                    carts.push(Cart {
+                        id: cart_id,
+                        pos: position,
+                        facing: '^',
+                        intersections: 0,
+                    });
                     cart_id += 1;
-                },
+                }
                 _ => {
                     initial_map.insert(position, c);
                 }
@@ -113,7 +134,7 @@ fn print_map(track_map: HashMap<Position, char>) {
     for i in 0..max_depth + 1 {
         let mut line = "".to_owned();
         for j in 0..max_width + 1 {
-            let p = Position{i, j};
+            let p = Position { i, j };
             if track_map.contains_key(&p) {
                 line.push(*track_map.get(&p).unwrap());
             }
@@ -123,17 +144,27 @@ fn print_map(track_map: HashMap<Position, char>) {
 }
 
 fn cart_sort_fn(a: &Cart, b: &Cart) -> Ordering {
-    if a.pos.i > b.pos.i { return Ordering::Greater; }
-    if a.pos.i < b.pos.i { return Ordering::Less; }
+    if a.pos.i > b.pos.i {
+        return Ordering::Greater;
+    }
+    if a.pos.i < b.pos.i {
+        return Ordering::Less;
+    }
 
-    if a.pos.j > b.pos.j { return Ordering::Greater; }
-    if a.pos.j < b.pos.j { return Ordering::Less; }
+    if a.pos.j > b.pos.j {
+        return Ordering::Greater;
+    }
+    if a.pos.j < b.pos.j {
+        return Ordering::Less;
+    }
 
     Ordering::Equal
 }
 
-fn simulate_carts(track_data: (HashMap<Position, char>, HashMap<Position, char>, Vec<Cart>), is_part_two: bool) -> Position {
-
+fn simulate_carts(
+    track_data: (HashMap<Position, char>, HashMap<Position, char>, Vec<Cart>),
+    is_part_two: bool,
+) -> Position {
     let mut track_map = track_data.0;
     let initial_map = track_data.1;
     let mut carts = track_data.2;
@@ -148,7 +179,6 @@ fn simulate_carts(track_data: (HashMap<Position, char>, HashMap<Position, char>,
         let mut to_remove: HashSet<usize> = HashSet::new();
 
         for cart in &mut carts {
-
             if is_part_two && to_remove.contains(&cart.id) {
                 continue;
             }
@@ -156,17 +186,29 @@ fn simulate_carts(track_data: (HashMap<Position, char>, HashMap<Position, char>,
             let next;
             match cart.facing {
                 '>' => {
-                    next = Position{i: cart.pos.i, j: cart.pos.j + 1};
-                },
+                    next = Position {
+                        i: cart.pos.i,
+                        j: cart.pos.j + 1,
+                    };
+                }
                 'v' => {
-                    next = Position{i: cart.pos.i + 1, j: cart.pos.j};
-                },
+                    next = Position {
+                        i: cart.pos.i + 1,
+                        j: cart.pos.j,
+                    };
+                }
                 '<' => {
-                    next = Position{i: cart.pos.i, j: cart.pos.j - 1};
-                },
+                    next = Position {
+                        i: cart.pos.i,
+                        j: cart.pos.j - 1,
+                    };
+                }
                 '^' => {
-                    next = Position{i: cart.pos.i - 1, j:cart.pos.j};
-                },
+                    next = Position {
+                        i: cart.pos.i - 1,
+                        j: cart.pos.j,
+                    };
+                }
                 _ => {
                     panic!("Invalid cart character: {}", cart.facing)
                 }
@@ -174,14 +216,25 @@ fn simulate_carts(track_data: (HashMap<Position, char>, HashMap<Position, char>,
 
             if track_map.contains_key(&next) {
                 let neighbour = *track_map.get(&next).unwrap();
-                if neighbour != ' ' && (neighbour == '>' || neighbour == '<' || neighbour == 'v' || neighbour == '^') {
+                if neighbour != ' '
+                    && (neighbour == '>'
+                        || neighbour == '<'
+                        || neighbour == 'v'
+                        || neighbour == '^')
+                {
                     if !is_part_two {
-                        return Position{i: next.j, j: next.i};
+                        return Position {
+                            i: next.j,
+                            j: next.i,
+                        };
                     }
 
                     track_map.insert(next, *initial_map.get(&next).unwrap());
                     track_map.insert(cart.pos, *initial_map.get(&cart.pos).unwrap());
-                    cart.pos = Position{i: next.i, j: next.j};
+                    cart.pos = Position {
+                        i: next.i,
+                        j: next.j,
+                    };
 
                     to_remove.insert(cart.id);
                     cart_positions.remove(&cart.id);
@@ -199,53 +252,48 @@ fn simulate_carts(track_data: (HashMap<Position, char>, HashMap<Position, char>,
                 }
 
                 match neighbour {
-                    '\\' => {
-                        match cart.facing {
-                            '>' => {
-                                cart.facing = 'v';
-                            },
-                            'v' => {
-                                cart.facing = '>';
-                            },
-                            '<' => {
-                                cart.facing = '^';
-                            },
-                            '^' => {
-                                cart.facing = '<';
-                            },
-                            _ => {
-                                panic!("Invalid cart character: {}", cart.facing)
-                            }
+                    '\\' => match cart.facing {
+                        '>' => {
+                            cart.facing = 'v';
+                        }
+                        'v' => {
+                            cart.facing = '>';
+                        }
+                        '<' => {
+                            cart.facing = '^';
+                        }
+                        '^' => {
+                            cart.facing = '<';
+                        }
+                        _ => {
+                            panic!("Invalid cart character: {}", cart.facing)
                         }
                     },
-                    '/' => {
-                        match cart.facing {
-                            '>' => {
-                                cart.facing = '^';
-                            },
-                            'v' => {
-                                cart.facing = '<';
-                            },
-                            '<' => {
-                                cart.facing = 'v';
-                            },
-                            '^' => {
-                                cart.facing = '>';
-                            },
-                            _ => {
-                                panic!("Invalid cart character: {}", cart.facing)
-                            }
+                    '/' => match cart.facing {
+                        '>' => {
+                            cart.facing = '^';
+                        }
+                        'v' => {
+                            cart.facing = '<';
+                        }
+                        '<' => {
+                            cart.facing = 'v';
+                        }
+                        '^' => {
+                            cart.facing = '>';
+                        }
+                        _ => {
+                            panic!("Invalid cart character: {}", cart.facing)
                         }
                     },
                     '+' => {
                         cart.intersections += 1;
                         if cart.intersections % 3 == 1 {
                             cart.turn_left();
-                        }
-                        else if cart.intersections % 3 == 0 {
+                        } else if cart.intersections % 3 == 0 {
                             cart.turn_right();
                         }
-                    },
+                    }
                     _ => {
                         // no-op
                         // keep facing the same direction
@@ -254,7 +302,10 @@ fn simulate_carts(track_data: (HashMap<Position, char>, HashMap<Position, char>,
 
                 track_map.insert(next, cart.facing);
                 track_map.insert(cart.pos, *initial_map.get(&cart.pos).unwrap());
-                cart.pos = Position{i: next.i, j: next.j};
+                cart.pos = Position {
+                    i: next.i,
+                    j: next.j,
+                };
 
                 cart_positions.insert(cart.id, cart.pos);
             }
@@ -264,13 +315,16 @@ fn simulate_carts(track_data: (HashMap<Position, char>, HashMap<Position, char>,
             carts.retain(|&c| !to_remove.contains(&c.id));
             if carts.len() == 1 {
                 let last_cart = carts.first().unwrap();
-                return Position{i: last_cart.pos.j, j: last_cart.pos.i};
+                return Position {
+                    i: last_cart.pos.j,
+                    j: last_cart.pos.i,
+                };
             }
         }
     }
 }
 
-fn main(){
+fn main() {
     let crash_location = simulate_carts(build_track_data(), false);
     println!("Part 1: {},{}", crash_location.i, crash_location.j);
 
