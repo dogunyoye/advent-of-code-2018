@@ -1,3 +1,12 @@
 /target
 **/*.rs.bk
+
+# Puzzle inputs are not committed (AoC request)
 /src/data/*.txt
+
+# Debug output
+/day17_debug_part1.txt
+
+# Generated visualisation output (scripts are committed)
+/visualisations/*.png
+/visualisations/*.gif
