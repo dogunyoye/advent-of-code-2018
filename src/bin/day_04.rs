@@ -8,7 +8,7 @@ use std::collections::HashMap;
 
 use chrono::{NaiveTime, NaiveDateTime};
 
-fn main() -> (){
+fn main(){
 
     let mut guard_log = Vec::new();
     let mut guards_sleep_map: HashMap<String, i64> = HashMap::new();
@@ -51,7 +51,7 @@ fn main() -> (){
         else if log_line.ends_with("wakes up") {
             let wake_up_time = time.trim_end_matches("]").trim();
 
-            let total_sleep = NaiveTime::parse_from_str(&wake_up_time, "%H:%M").unwrap() - NaiveTime::parse_from_str(&current_sleep_time, "%H:%M").unwrap();
+            let total_sleep = NaiveTime::parse_from_str(wake_up_time, "%H:%M").unwrap() - NaiveTime::parse_from_str(&current_sleep_time, "%H:%M").unwrap();
 
             let cloned_map = guards_sleep_map.clone();
             let total_guard_sleep_time = cloned_map.get(&current_guard_id);
@@ -118,7 +118,7 @@ fn main() -> (){
     let mut max = 0;
     let mut minute = 0;
 
-    for (key, _val) in guards_sleep_map.iter() {
+    for key in guards_sleep_map.keys() {
 
         for log_line in guard_log.iter() {
             let log_data_vec = log_line.splitn(3, " ").collect::<Vec<&str>>().iter().map(|&x| x.to_owned()).collect::<Vec<String>>();

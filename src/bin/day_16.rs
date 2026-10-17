@@ -5,6 +5,8 @@ use std::io::{BufRead, BufReader};
 use std::collections::HashMap;
 use std::collections::HashSet;
 
+pub(crate) type Operation = fn(Vec<usize>, usize, usize, usize) -> Vec<usize>;
+
 pub(crate) fn addr(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Vec<usize> {
     register[c] = register[a]  + register[b];
     register
@@ -116,29 +118,30 @@ pub(crate) fn eqrr(mut register: Vec<usize>, a: usize, b: usize, c: usize) -> Ve
 }
 
 #[allow(dead_code)]
-fn main() -> (){
+fn main(){
 
     let mut count = 0;
     let lines: Vec<String> = BufReader::new(File::open("src/data/day_16_input.txt").unwrap())
                              .lines().map(|l| l.unwrap()).collect();
 
-    let mut functions: Vec<fn(Vec<usize>, usize, usize, usize) -> Vec<usize>> = Vec::new();
-    functions.push(addr); // 0
-    functions.push(addi); // 1
-    functions.push(mulr); // 2
-    functions.push(muli); // 3
-    functions.push(banr); // 4
-    functions.push(bani); // 5
-    functions.push(borr); // 6
-    functions.push(bori); // 7
-    functions.push(setr); // 8
-    functions.push(seti); // 9
-    functions.push(gtir); // 10
-    functions.push(gtri); // 11
-    functions.push(gtrr); // 12
-    functions.push(eqir); // 13
-    functions.push(eqri); // 14
-    functions.push(eqrr); // 15
+    let functions: Vec<Operation> = vec![
+        addr,  // 0
+        addi,  // 1
+        mulr,  // 2
+        muli,  // 3
+        banr,  // 4
+        bani,  // 5
+        borr,  // 6
+        bori,  // 7
+        setr,  // 8
+        seti,  // 9
+        gtir,  // 10
+        gtri,  // 11
+        gtrr,  // 12
+        eqir,  // 13
+        eqri,  // 14
+        eqrr,  // 15
+    ];
 
     let mut possible_opcodes: HashMap<usize, HashSet<usize>> = HashMap::new();
     for i in 0..functions.len() {
@@ -149,9 +152,9 @@ fn main() -> (){
     let mut blank_line_count = 0;
     let mut program_start_index = 0;
 
-    for i in 0..lines.len() {
+    for (i, line) in lines.iter().enumerate() {
 
-        if lines[i] == "" {
+        if line.is_empty() {
             blank_line_count += 1;
             // if we see 3 blank lines in a row
             // break as we're entering part 2
@@ -166,7 +169,7 @@ fn main() -> (){
         }
 
         if i % 4 == 0 {
-            let line1 = &lines[i].replace("Before: [", "").replace("]", "").replace(" ", "");
+            let line1 = &line.replace("Before: [", "").replace("]", "").replace(" ", "");
             let registers_before: Vec<usize> = line1.split(",").map(|v| v.parse::<usize>().unwrap()).collect();
 
             let operation: Vec<usize> = lines[i+1].split_whitespace().map(|v| v.parse::<usize>().unwrap()).collect();
@@ -177,8 +180,8 @@ fn main() -> (){
             let mut total = 0;
             let mut vec: Vec<usize> = Vec::new();
 
-            for j in 0..functions.len() {
-                let eval = functions.get(j).unwrap()(registers_before.clone(), operation[1], operation[2], operation[3]);
+            for (j, function) in functions.iter().enumerate() {
+                let eval = function(registers_before.clone(), operation[1], operation[2], operation[3]);
 
                 if eval == registers_after {
                     if let Some(set) = possible_opcodes.get_mut(&operation[0]) {
@@ -205,7 +208,7 @@ fn main() -> (){
 
     let mut determined_opcodes: HashSet<usize> = HashSet::new();
 
-    for (_, v) in &possible_opcodes {
+    for v in possible_opcodes.values() {
         if v.len() == 1 {
             for x in v.iter() {
                 determined_opcodes.insert(*x);
@@ -218,7 +221,7 @@ fn main() -> (){
     while !all_sets_empty {
         for (k, v) in &mut possible_opcodes {
             for code in &determined_opcodes {
-                let _ = &v.remove(&code);
+                let _ = &v.remove(code);
             }
 
             if v.len() == 1 {
@@ -230,7 +233,7 @@ fn main() -> (){
         }
 
         all_sets_empty = true;
-        for (_, v) in &mut possible_opcodes {
+        for v in possible_opcodes.values_mut() {
             if !v.is_empty() {
                 all_sets_empty = false;
             }
@@ -239,8 +242,8 @@ fn main() -> (){
 
     let mut part2_register = vec![0; 4];
 
-    for i in program_start_index..lines.len() {
-        let operation: Vec<usize> = lines[i].split_whitespace().map(|v| v.parse::<usize>().unwrap()).collect();
+    for line in lines.iter().skip(program_start_index) {
+        let operation: Vec<usize> = line.split_whitespace().map(|v| v.parse::<usize>().unwrap()).collect();
         let function_index: usize = *opcodes.get(&operation[0]).unwrap();
         part2_register = functions.get(function_index).unwrap()(part2_register.clone(), operation[1], operation[2], operation[3]);
     }

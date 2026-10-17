@@ -4,7 +4,7 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::collections::VecDeque;
 
-fn main() -> (){
+fn main(){
     let mut input_string: String = String::new();
     let mut result = VecDeque::new();
 
@@ -16,14 +16,14 @@ fn main() -> (){
 
     for i in 0..input_string.len() {
 
-        let c = chars.next().unwrap().clone();
+        let c = chars.next().unwrap();
 
-        if i == 0 || result.len() == 0 {
+        if i == 0 || result.is_empty() {
             result.push_front(c);
             continue;
         }
 
-        let prev_char = result.front().unwrap().clone();
+        let prev_char = *result.front().unwrap();
 
         if (c.is_uppercase() && c.to_ascii_lowercase() == prev_char) ||
             (c.is_lowercase() && c.to_ascii_uppercase() == prev_char) {
@@ -46,14 +46,14 @@ fn main() -> (){
 
         for j in 0..input_string.len() {
 
-            let c = chars_iter.next().unwrap().clone();
+            let c = chars_iter.next().unwrap();
 
-            if j == 0 || result.len() == 0 {
+            if j == 0 || result.is_empty() {
                 result.push_front(c);
                 continue;
             }
 
-            let prev_char = result.front().unwrap().clone();
+            let prev_char = *result.front().unwrap();
 
             if c as u8 == i || c as u8 == i + 32 {
                 // skip

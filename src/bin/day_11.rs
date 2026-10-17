@@ -5,8 +5,8 @@ fn power_level_fn(x: i32, y: i32, grid_serial_number: i32) -> i32 {
     let mut power_level: i32;
     let rack_id = x + 10;
     power_level = rack_id * y;
-    power_level = power_level + grid_serial_number;
-    power_level = power_level * rack_id;
+    power_level += grid_serial_number;
+    power_level *= rack_id;
     if power_level >= 100 {
         power_level = (power_level / 100) % 10 - 5;
     }
@@ -17,7 +17,7 @@ fn power_level_fn(x: i32, y: i32, grid_serial_number: i32) -> i32 {
     power_level
 }
 
-fn main() -> (){
+fn main(){
 
     let grid_serial_number = 7857;
     let mut max_power_level = 0;
@@ -28,10 +28,9 @@ fn main() -> (){
     let mut grid = vec![vec![0; grid_size + 1]; grid_size + 1];
     let mut sat = vec![vec![0; grid_size + 1]; grid_size + 1];
 
-    for y in 1..grid_size + 1 {
-        for x in 1..grid_size + 1 {
-            let power_level = power_level_fn(x as i32, y as i32, grid_serial_number);
-            grid[x][y] = power_level;
+    for (x, row) in grid.iter_mut().enumerate().skip(1) {
+        for (y, cell) in row.iter_mut().enumerate().skip(1) {
+            *cell = power_level_fn(x as i32, y as i32, grid_serial_number);
         }
     }
 

@@ -11,7 +11,7 @@ struct Node {
     value: usize
 }
 
-fn build_tree(data: &Vec<usize>, iterator: &mut Iter<usize>, sum: &mut usize) -> Node {
+fn build_tree(iterator: &mut Iter<usize>, sum: &mut usize) -> Node {
     let children_count = iterator.next().unwrap();
     let metadata_count = iterator.next().unwrap();
 
@@ -19,7 +19,7 @@ fn build_tree(data: &Vec<usize>, iterator: &mut Iter<usize>, sum: &mut usize) ->
     let mut metadata: Vec<usize> = Vec::new();
 
     for _ in 0..*children_count {
-        children.push(build_tree(data, iterator, sum));
+        children.push(build_tree(iterator, sum));
     }
 
     for _ in 0..*metadata_count {
@@ -28,10 +28,10 @@ fn build_tree(data: &Vec<usize>, iterator: &mut Iter<usize>, sum: &mut usize) ->
         *sum += value;
     }
 
-    Node { children: children, metadata: metadata, value: 0 }
+    Node { children, metadata, value: 0 }
 }
 
-fn calculate_value(node: &mut Node, sum: &mut usize) -> () {
+fn calculate_value(node: &mut Node, sum: &mut usize) {
     if node.children.is_empty() {
         node.value = node.metadata.iter().sum();
         return;
@@ -49,7 +49,7 @@ fn calculate_value(node: &mut Node, sum: &mut usize) -> () {
     }
 }
 
-fn main() -> (){
+fn main(){
 
     let mut tree_data: Vec<usize> = Vec::new();
 
@@ -64,7 +64,7 @@ fn main() -> (){
     let mut iterator = tree_data.iter();
     let mut sum: usize = 0;
 
-    let mut root = build_tree(&tree_data, &mut iterator, &mut sum);
+    let mut root = build_tree(&mut iterator, &mut sum);
 
     println!("Part 1: {}", sum);
 

@@ -43,20 +43,20 @@ fn build_map() -> (HashMap<Position, char>, i32, i32) {
 
         for i in 0..2 {
             let p: Vec<&str> = parts.get(i).unwrap().split("=").collect();
-            let axis = p.get(0).unwrap();
+            let axis = p.first().unwrap();
             let axis_val = p.get(1).unwrap();
 
-            let axis_vec: &mut Vec<i32>;
-            if *axis == "x" {
-                axis_vec = xs.borrow_mut()
+            
+            let axis_vec: &mut Vec<i32> = if *axis == "x" {
+                xs.borrow_mut()
             }
             else {
-                axis_vec = ys.borrow_mut()
-            }
+                ys.borrow_mut()
+            };
 
             if axis_val.contains("..") {
                 let range: Vec<&str> = axis_val.split("..").collect();
-                let lower = range.get(0).unwrap().parse::<i32>().unwrap();
+                let lower = range.first().unwrap().parse::<i32>().unwrap();
                 let higher = range.get(1).unwrap().parse::<i32>().unwrap() + 1;
                 for v in lower..higher {
                     axis_vec.push(v)
@@ -88,22 +88,18 @@ fn build_map() -> (HashMap<Position, char>, i32, i32) {
     for i in min_i..max_i+1 {
         for j in min_j-1..max_j+2 {
             let p = Position{i, j};
-            if !map.contains_key(&p) {
-                map.insert(p, '.');
-            }
+            map.entry(p).or_insert('.');
         }
     }
 
-    return (map, min_i, max_i);
+    (map, min_i, max_i)
 }
 
 fn drop(drop_point: Position, map: &mut HashMap<Position, char>) -> Option<Position> {
     let mut p: Position = Position{i: drop_point.i + 1, j: drop_point.j};
     loop {
         let s: Option<&char> = map.get(&p);
-        if s.is_none() {
-            return None;
-        }
+        s?;
         // if landed on position known to be unsettled
         if *s.unwrap() == '|' {
             return None;
@@ -169,7 +165,7 @@ fn fill_row(pos: Position, map: &mut HashMap<Position, char>) -> Vec<Position> {
         map.insert(rp, fill);
     }
 
-    return drop_points;
+    drop_points
 }
 
 fn find_number_of_water_reaching_tiles() -> (i32, i32) {
@@ -178,14 +174,13 @@ fn find_number_of_water_reaching_tiles() -> (i32, i32) {
     let mut drop_points: VecDeque<Position> = VecDeque::new();
     drop_points.push_back(origin);
 
-    while drop_points.len() != 0 {
+    while !drop_points.is_empty() {
         let dp = drop_points.pop_front().unwrap();
         let sp = drop(dp, &mut map);
-        if sp.is_some() {
-            let mut p = sp.unwrap();
+        if let Some(mut p) = sp {
             loop {
                 let next_drop_points = fill_row(p, &mut map);
-                if next_drop_points.len() != 0 {
+                if !next_drop_points.is_empty() {
                     for ndp in next_drop_points {
                         drop_points.push_back(ndp)
                     }
@@ -210,10 +205,10 @@ fn find_number_of_water_reaching_tiles() -> (i32, i32) {
         }
     }
 
-    return (part_one + part_two, part_two);
+    (part_one + part_two, part_two)
 }
 
-fn main() -> (){
+fn main(){
     let (part_one, part_two) = find_number_of_water_reaching_tiles();
     println!("Part 1: {}", part_one);
     println!("Part 2: {}", part_two);

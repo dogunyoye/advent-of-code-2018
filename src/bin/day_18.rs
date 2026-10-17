@@ -15,21 +15,21 @@ struct Point {
     y: i32
 }
 
-fn grid_to_string(grid: &Vec<Vec<Acre>>) -> String {
-    return grid
+fn grid_to_string(grid: &[Vec<Acre>]) -> String {
+    grid
         .iter()
         .flatten()
         .map(|x|
             if x.current == '#' {
-                return "#"
+                "#"
             } else if x.current == '|' {
-                return "|"
+                "|"
             } else {
-                return "?"
+                "?"
             }
         )
         .collect::<Vec<_>>()
-        .join(" ");
+        .join(" ")
 }
 
 fn build_initial_grid() -> Vec<Vec<Acre>> {
@@ -37,21 +37,18 @@ fn build_initial_grid() -> Vec<Vec<Acre>> {
     let grid_size = 50;
     let mut grid = vec![vec![default; grid_size]; grid_size];
 
-    let mut x = 0;
-    for line in BufReader::new(File::open("src/data/day_18_input.txt").unwrap()).lines() {
+    for (x, line) in BufReader::new(File::open("src/data/day_18_input.txt").unwrap()).lines().enumerate() {
         let line = line.unwrap();
-        let mut y = 0;
-        for c in line.chars() {
+        for (y, c) in line.chars().enumerate() {
             grid[x][y] = Acre { current: c, next: '?' };
-            y += 1;
         }
-        x += 1;
     }
 
     grid
 }
 
-fn simulate(grid: &mut Vec<Vec<Acre>>, grid_size: usize) {
+#[allow(clippy::needless_range_loop)]
+fn simulate(grid: &mut [Vec<Acre>], grid_size: usize) {
     for x in 0..grid_size {
         let x_coord = x as i32;
 
@@ -117,20 +114,20 @@ fn simulate(grid: &mut Vec<Vec<Acre>>, grid_size: usize) {
         }
     }
 
-    for x in 0..grid_size {
-        for y in 0..grid_size {
-            grid[x][y].current = grid[x][y].next;
+    for row in grid.iter_mut() {
+        for acre in row.iter_mut() {
+            acre.current = acre.next;
         }
     }
 }
 
-fn calculate_total(grid: &Vec<Vec<Acre>>, grid_size: usize) -> usize {
+fn calculate_total(grid: &[Vec<Acre>], grid_size: usize) -> usize {
     let mut lumberyard_count = 0;
     let mut wooded_acre_count = 0;
 
-    for x in 0..grid_size {
-        for y in 0..grid_size {
-            match grid[x][y].current {
+    for row in grid.iter().take(grid_size) {
+        for acre in row.iter().take(grid_size) {
+            match acre.current {
                 '#' => {
                     lumberyard_count += 1
                 },
@@ -145,7 +142,7 @@ fn calculate_total(grid: &Vec<Vec<Acre>>, grid_size: usize) -> usize {
     lumberyard_count * wooded_acre_count
 }
 
-fn part1() -> () {
+fn part1() {
     let grid_size = 50;
     let mut grid = build_initial_grid();
     let mut minutes = 10;
@@ -158,7 +155,7 @@ fn part1() -> () {
     println!("Part 1: {}", calculate_total(&grid, grid_size));
 }
 
-fn part2() -> () {
+fn part2() {
     let grid_size = 50;
     let mut grid = build_initial_grid();
     let mut minutes = 1000000000;
@@ -186,7 +183,7 @@ fn part2() -> () {
     }
 }
 
-fn main() -> (){
+fn main(){
     part1();
     part2();
 }

@@ -9,13 +9,13 @@ struct Elf {
 }
 
 impl Elf {
-    fn set(&mut self, score:u32, index:u32) -> () {
+    fn set(&mut self, score:u32, index:u32) {
         self.score = score;
         self.index = index;
     }
 }
 
-fn part1() -> () {
+fn part1() {
     let mut elf1 = Elf { score: 3, index: 0};
     let mut elf2 = Elf { score: 7, index: 1};
 
@@ -49,7 +49,7 @@ fn part1() -> () {
     println!();
 }
 
-fn part2() -> () {
+fn part2() {
     let mut elf1 = Elf { score: 3, index: 0};
     let mut elf2 = Elf { score: 7, index: 1};
 

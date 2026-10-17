@@ -6,7 +6,7 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::collections::HashMap;
 
-fn run_process(instructions: &HashMap<String, fn(Vec<usize>, usize, usize, usize) -> Vec<usize>>, register: &mut Vec<usize>, mut program: Vec<String>, part_two: bool) {
+fn run_process(instructions: &HashMap<String, day_16::Operation>, register: &mut Vec<usize>, mut program: Vec<String>, part_two: bool) {
     let mut instruction_pointer: usize = 0;
     let instruction_pointer_index: usize = program[0][4..5].parse::<usize>().unwrap();
     let mut cycles = 0;
@@ -35,9 +35,9 @@ fn run_process(instructions: &HashMap<String, fn(Vec<usize>, usize, usize, usize
     }
 }
 
-fn main() -> (){
+fn main(){
 
-    let mut instructions: HashMap<String, fn(Vec<usize>, usize, usize, usize) -> Vec<usize>> =
+    let mut instructions: HashMap<String, day_16::Operation> =
         HashMap::new();
 
     instructions.insert("addr".to_string(), day_16::addr);
@@ -62,7 +62,7 @@ fn main() -> (){
 
     let mut registers_1: Vec<usize> = vec![0, 0, 0, 0, 0, 0];
     run_process(&instructions, &mut registers_1, program.clone(), false);
-    let part_one = *registers_1.get(0).unwrap();
+    let part_one = *registers_1.first().unwrap();
 
     println!("Part one: {}", part_one);
 
@@ -73,7 +73,7 @@ fn main() -> (){
     let n = registers_2.into_iter().max().unwrap();
 
     for i in 1..n + 1 {
-        if n % i == 0 {
+        if n.is_multiple_of(i) {
             part_two += i;
         }
     }

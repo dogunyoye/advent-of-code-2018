@@ -7,10 +7,7 @@ use std::collections::HashMap;
 use std::iter::FromIterator;
 
 fn calculate_sum(capacity: usize, generations: i64, part_two: bool) -> i64 {
-    let mut state: Vec<char> = Vec::with_capacity(capacity);
-    for _ in 0..capacity {
-        state.push('.');
-    }
+    let mut state: Vec<char> = vec!['.'; capacity];
 
     let padding: i32 = 5;
     let mut data_insert_index: usize = padding as usize;
@@ -32,7 +29,7 @@ fn calculate_sum(capacity: usize, generations: i64, part_two: bool) -> i64 {
         }
         else if line.contains("=>") {
             let rule = line.split("=>").collect::<Vec<&str>>();
-            rules_map.insert(rule[0].trim().to_string(), rule[1].trim().chars().nth(0).unwrap());
+            rules_map.insert(rule[0].trim().to_string(), rule[1].trim().chars().next().unwrap());
         }
     }
 
@@ -53,15 +50,15 @@ fn calculate_sum(capacity: usize, generations: i64, part_two: bool) -> i64 {
             }
             else if j == 1 {
                 evaluate.push('.');
-                evaluate.push(state.get(j-1).unwrap().clone());
+                evaluate.push(*state.get(j-1).unwrap());
             }
             else {
-                evaluate.push(state.get(j-2).unwrap().clone());
-                evaluate.push(state.get(j-1).unwrap().clone());
+                evaluate.push(*state.get(j-2).unwrap());
+                evaluate.push(*state.get(j-1).unwrap());
             }
 
             // set up centre - C
-            evaluate.push(state.get(j).unwrap().clone());
+            evaluate.push(*state.get(j).unwrap());
 
             //set up right side - RR
             if j == state.len() - 1 {
@@ -70,17 +67,17 @@ fn calculate_sum(capacity: usize, generations: i64, part_two: bool) -> i64 {
             }
             else if j == state.len() - 2 {
                 evaluate.push('.');
-                evaluate.push(state.get(j+1).unwrap().clone());
+                evaluate.push(*state.get(j+1).unwrap());
             }
             else {
-                evaluate.push(state.get(j+1).unwrap().clone());
-                evaluate.push(state.get(j+2).unwrap().clone());
+                evaluate.push(*state.get(j+1).unwrap());
+                evaluate.push(*state.get(j+2).unwrap());
             }
 
             let s = String::from_iter(evaluate.clone());
 
             if let Some(res) = rules_map.get(&s) {
-                result.push(res.clone());
+                result.push(*res);
             }
             else {
                 result.push('.');
@@ -126,7 +123,7 @@ fn calculate_sum(capacity: usize, generations: i64, part_two: bool) -> i64 {
     sum
 }
 
-fn main() -> (){
+fn main(){
     println!("Part 1: {}", calculate_sum(200, 20, false));
     println!("Part 2: {}", calculate_sum(2000, 50000000000, true));
 }

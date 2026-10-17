@@ -11,7 +11,7 @@ struct Point {
     y_velocity: i32
 }
 
-fn main() -> (){
+fn main(){
 
     let mut points: Vec<Point> = Vec::new();
 
@@ -19,11 +19,10 @@ fn main() -> (){
         let data = line.unwrap().replace("position=", "").replace("velocity=", "")
             .replace(">", ""). replace("<", "").replace(",", "");
 
-        let vec: Vec<i32> = data.trim().split_whitespace().map(|d| d.trim().parse::<i32>().unwrap()).collect();
+        let vec: Vec<i32> = data.split_whitespace().map(|d| d.trim().parse::<i32>().unwrap()).collect();
         points.push(Point { x: vec[0], y: vec[1], x_velocity: vec[2], y_velocity: vec[3] });
     }
 
-    let len = points.len();
     let mut count = 0;
 
     let grid_size = 80;
@@ -35,8 +34,7 @@ fn main() -> (){
         let min_x = points.iter().map(|point| point.x).min().unwrap();
         let min_y = points.iter().map(|point| point.y).min().unwrap();
 
-        for i in 0..len {
-            let p: &mut Point = &mut points[i];
+        for p in &points {
             let x = p.x - min_x;
             let y = p.y - min_y;
 
@@ -49,22 +47,22 @@ fn main() -> (){
             }
         }
 
-        for i in 0..len {
-            points[i].x += points[i].x_velocity;
-            points[i].y += points[i].y_velocity;
+        for p in &mut points {
+            p.x += p.x_velocity;
+            p.y += p.y_velocity;
         }
 
         if all_points_in_sight {
 
             let mut break_condition = 0;
-            for x in 0..10 {
-                if grid[x][0] == '#' {
+            for (x, first_row) in grid.iter().enumerate().take(10) {
+                if first_row[0] == '#' {
                     break_condition += 1;
                 }
 
                 print!("{}|", count);
-                for y in 0..80 {
-                    print!("{}", grid[y][x]);
+                for row in grid.iter() {
+                    print!("{}", row[x]);
                 }
                 println!();
             }

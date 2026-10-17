@@ -59,14 +59,14 @@ fn play_game(players: i32, number_of_marbles: i64) -> i64 {
 
     let mut winning_score = 0;
 
-    for (_, val) in players_score.iter() {
+    for val in players_score.values() {
         winning_score = cmp::max(winning_score, *val);
     }
 
     winning_score
 }
 
-fn main() -> (){
+fn main(){
 
     let mut players: i32 = 0;
     let mut last_marble_points: i64 = 0;
@@ -75,7 +75,7 @@ fn main() -> (){
         let line = line.unwrap();
         let data = line.split(" ").collect::<Vec<&str>>();
 
-        players = data.get(0).unwrap().parse().unwrap();
+        players = data.first().unwrap().parse().unwrap();
         last_marble_points = data.get(data.len() - 2).unwrap().parse().unwrap();
     }
 

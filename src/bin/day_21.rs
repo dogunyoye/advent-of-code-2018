@@ -15,7 +15,7 @@ struct Instruction {
     c: usize
 }
 
-fn part1(operations: &HashMap<String, fn(Vec<usize>, usize, usize, usize) -> Vec<usize>>, program: &Vec<Instruction>, index: usize) {
+fn part1(operations: &HashMap<String, day_16::Operation>, program: &[Instruction], index: usize) {
     let mut registers: Vec<usize> = vec![0, 0, 0, 0, 0, 0];
     let mut instruction_pointer: usize = 0;
     let instruction_pointer_index: usize = index;
@@ -37,7 +37,7 @@ fn part1(operations: &HashMap<String, fn(Vec<usize>, usize, usize, usize) -> Vec
         registers[0] = registers[1];
         let instruction: &Instruction = &program[instruction_pointer];
 
-        let operation_fn: fn(Vec<usize>, usize, usize, usize) -> Vec<usize> = *operations.get(&instruction.operation).unwrap();
+        let operation_fn: day_16::Operation = *operations.get(&instruction.operation).unwrap();
         registers = operation_fn(registers, instruction.a, instruction.b, instruction.c);
 
         instruction_pointer = registers[instruction_pointer_index];
@@ -51,7 +51,7 @@ fn part1(operations: &HashMap<String, fn(Vec<usize>, usize, usize, usize) -> Vec
 // iterate until we find a repeating number. Perhaps if we inspect the
 // program, we can find the general pattern and generate the values until
 // find a repeater
-fn part2(operations: &HashMap<String, fn(Vec<usize>, usize, usize, usize) -> Vec<usize>>, program: &Vec<Instruction>, index: usize) {
+fn part2(operations: &HashMap<String, day_16::Operation>, program: &[Instruction], index: usize) {
     let mut registers: Vec<usize> = vec![0, 0, 0, 0, 0, 0];
     let mut instruction_pointer: usize = 0;
     let instruction_pointer_index: usize = index;
@@ -68,14 +68,14 @@ fn part2(operations: &HashMap<String, fn(Vec<usize>, usize, usize, usize) -> Vec
         registers[instruction_pointer_index] = instruction_pointer;
         let instruction: &Instruction = &program[instruction_pointer];
 
-        let operation_fn: fn(Vec<usize>, usize, usize, usize) -> Vec<usize> = *operations.get(&instruction.operation).unwrap();
+        let operation_fn: day_16::Operation = *operations.get(&instruction.operation).unwrap();
         registers = operation_fn(registers, instruction.a, instruction.b, instruction.c);
 
         instruction_pointer = registers[instruction_pointer_index];
         instruction_pointer += 1;
 
         if instruction_pointer == 28 {
-            if values.get(&registers[1]).is_some() {
+            if values.contains(&registers[1]) {
                 break;
             }
 
@@ -87,7 +87,7 @@ fn part2(operations: &HashMap<String, fn(Vec<usize>, usize, usize, usize) -> Vec
     println!("Part 2: {}", last);
 }
 
-fn main() -> (){
+fn main(){
 
     let mut lines: Vec<String> = BufReader::new(File::open("src/data/day_21_input.txt").unwrap())
         .lines().map(|l| l.unwrap()).collect();
@@ -106,7 +106,7 @@ fn main() -> (){
             c: vec[3].parse::<usize>().unwrap()});
     }
 
-    let mut operations: HashMap<String, fn(Vec<usize>, usize, usize, usize) -> Vec<usize>> =
+    let mut operations: HashMap<String, day_16::Operation> =
         HashMap::new();
 
     operations.insert("addr".to_string(), day_16::addr);

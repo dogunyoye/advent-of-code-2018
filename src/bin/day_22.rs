@@ -29,13 +29,13 @@ struct Climber {
 
 impl Ord for Climber {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        return other.cost.cmp(&self.cost);
+        other.cost.cmp(&self.cost)
     }
 }
 
 impl PartialOrd for Climber {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        return Some(self.cmp(other));
+        Some(self.cmp(other))
     }
 }
 
@@ -49,7 +49,7 @@ struct Region {
 
 impl Region {
 
-    fn determine_region_type(&mut self) -> () {
+    fn determine_region_type(&mut self) {
         match self.erosion_level % 3 {
             0 => {
                 self.region_char = '.';
@@ -69,32 +69,21 @@ impl Region {
 }
 
 #[allow(unused)]
-fn print_map(grid: &Vec<Vec<Region>>, depth: usize, width: usize) {
-    for i in 0..depth {
-        let mut line = "".to_owned();
-        for j in 0..width {
-            line.push(grid[i][j].region_char);
-        }
+fn print_map(grid: &[Vec<Region>], depth: usize, width: usize) {
+    for row in grid.iter().take(depth) {
+        let line: String = row.iter().take(width).map(|region| region.region_char).collect();
         println!("{}", line);
     }
 }
 
 // reorientate the map in accordance with the example
-fn translate_map(grid: &Vec<Vec<Region>>, depth: usize, width: usize) -> Vec<Vec<Region>> {
-    let default = Region { region_type: RegionType::Unknown, geologic_index: -1, erosion_level: -1, region_char: '?' };
-    let mut translated_grid: Vec<Vec<Region>> = vec![vec![default; depth]; width];
-
-    for i in 0..width {
-        let mut v: Vec<Region> = Vec::new();
-        for j in 0..depth {
-            v.push(grid[j][i].clone());
-        }
-        translated_grid[i] = v;
-    }
-
-    return translated_grid;
+fn translate_map(grid: &[Vec<Region>], depth: usize, width: usize) -> Vec<Vec<Region>> {
+    (0..width)
+        .map(|i| grid.iter().take(depth).map(|row| row[i]).collect())
+        .collect()
 }
 
+#[allow(clippy::needless_range_loop)]
 fn build_map(expanded_depth: Option<usize>, expanded_width: Option<usize>) -> (Vec<Vec<Region>>, usize, usize, (i32, i32)) {
     let lines: Vec<String> = BufReader::new(File::open("src/data/day_22_input.txt").unwrap()).lines()
     .map(|l| l.unwrap()).collect();
@@ -107,9 +96,9 @@ fn build_map(expanded_depth: Option<usize>, expanded_width: Option<usize>) -> (V
 
     let mut grid_depth: usize = target_depth;
     let mut grid_width: usize = target_width;
-    if expanded_depth.is_some() && expanded_width.is_some() {
-        grid_depth += expanded_depth.unwrap();
-        grid_width += expanded_width.unwrap();
+    if let (Some(depth), Some(width)) = (expanded_depth, expanded_width) {
+        grid_depth += depth;
+        grid_width += width;
     }
 
     let default = Region { region_type: RegionType::Unknown, geologic_index: -1, erosion_level: -1, region_char: '?' };
@@ -156,23 +145,23 @@ fn build_map(expanded_depth: Option<usize>, expanded_width: Option<usize>) -> (V
         }
     }
 
-    return (grid, grid_depth, grid_width, (target_width as i32 - 1, target_depth as i32 - 1));
+    (grid, grid_depth, grid_width, (target_width as i32 - 1, target_depth as i32 - 1))
 }
 
 fn is_position_valid(position: (i32, i32), depth: i32, width: i32) -> bool {
-    return !(position.0 < 0 || position.1 < 0 || position.0 >= depth || position.1 >= width);
+    !(position.0 < 0 || position.1 < 0 || position.0 >= depth || position.1 >= width)
 }
 
 fn inventory_options(terrain: char) -> HashSet<Equipment> {
     match terrain {
-        '.' => return HashSet::from([Equipment::ClimbingGear, Equipment::Torch]),
-        '=' => return HashSet::from([Equipment::ClimbingGear, Equipment::Empty]),
-        '|' => return HashSet::from([Equipment::Torch, Equipment::Empty]),
+        '.' => HashSet::from([Equipment::ClimbingGear, Equipment::Torch]),
+        '=' => HashSet::from([Equipment::ClimbingGear, Equipment::Empty]),
+        '|' => HashSet::from([Equipment::Torch, Equipment::Empty]),
         _ => panic!("Unknown terrain: {}", terrain)
     }
 }
 
-fn djikstra(grid: &Vec<Vec<Region>>, target: (i32, i32), depth: i32, width: i32) -> usize {
+fn djikstra(grid: &[Vec<Region>], target: (i32, i32), depth: i32, width: i32) -> usize {
     let mut frontier: BinaryHeap<Climber> = BinaryHeap::new();
     let mut cost_so_far: HashMap<(Equipment, (i32, i32)), usize> = HashMap::new();
     let mut result = usize::MAX;
@@ -181,7 +170,7 @@ fn djikstra(grid: &Vec<Vec<Region>>, target: (i32, i32), depth: i32, width: i32)
     frontier.push(initial_climber);
     cost_so_far.insert((initial_climber.equipped, initial_climber.position), 0);
 
-    while frontier.len() != 0 {
+    while !frontier.is_empty() {
         let current_climber = frontier.pop().unwrap();
         let current_state = (current_climber.equipped, current_climber.position);
 
@@ -207,7 +196,7 @@ fn djikstra(grid: &Vec<Vec<Region>>, target: (i32, i32), depth: i32, width: i32)
     
                     let equippable: Vec<&Equipment> = current_position_options.intersection(&next_position_options).collect();
                     for e in equippable {
-                        let mut climber_clone = current_climber.clone();
+                        let mut climber_clone = current_climber;
                         climber_clone.position = next_pos;
 
                         let mut new_cost = climber_clone.cost + 1;
@@ -228,34 +217,34 @@ fn djikstra(grid: &Vec<Vec<Region>>, target: (i32, i32), depth: i32, width: i32)
         }
     }
 
-    return result;
+    result
 }
 
 fn calculate_total_risk_level() -> usize {
     let (grid, depth, width, _) = build_map(None, None);
     let mut total_risk_level: usize = 0;
 
-    for x in 0..depth {
-        for y in 0..width {
-            match grid[x][y].region_type {
+    for row in grid.iter().take(depth) {
+        for region in row.iter().take(width) {
+            match region.region_type {
                 RegionType::Rocky => {},
                 RegionType::Wet => total_risk_level += 1,
                 RegionType::Narrow => total_risk_level += 2,
-                _ => panic!("Unknown region type: {:?}", grid[x][y].region_type)
+                _ => panic!("Unknown region type: {:?}", region.region_type)
             }
         }
     }
 
-    return total_risk_level;
+    total_risk_level
 }
 
 fn find_fewest_number_of_minutes_to_reach_target() -> usize {
     let (grid, grid_depth, grid_width, target) = build_map(Some(100), Some(100));
     let translated_map: Vec<Vec<Region>> = translate_map(&grid, grid_depth, grid_width);
-    return djikstra(&translated_map, target, grid_width as i32, grid_depth as i32);
+    djikstra(&translated_map, target, grid_width as i32, grid_depth as i32)
 }
 
-fn main() -> (){
+fn main(){
     println!("Part one: {}", calculate_total_risk_level());
     println!("Part two: {}", find_fewest_number_of_minutes_to_reach_target());
 }

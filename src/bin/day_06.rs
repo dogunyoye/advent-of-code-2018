@@ -19,22 +19,21 @@ struct Occupation {
     can_be_occupied: bool
 }
 
-fn main() -> (){
+fn main(){
 
     let mut largest_y = 0;
     let mut largest_x = 0;
-    let mut i = 1;
 
     let mut coords_map: HashMap<String, Point> = HashMap::new();
     let mut coords_area: HashMap<String, i32> = HashMap::new();
 
-    for line in BufReader::new(File::open("src/data/day_6_input.txt").unwrap()).lines() {
+    for (i, line) in (1..).zip(BufReader::new(File::open("src/data/day_6_input.txt").unwrap()).lines()) {
         let coord_vec = line.unwrap().split(",").collect::<Vec<&str>>().iter().map(|&x| x.to_owned()).collect::<Vec<String>>();
         let name_of_point = format!("Point{}", i);
 
         let point = Point {
                 name: name_of_point.to_string(),
-                x: coord_vec.get(0).unwrap().trim().parse().unwrap(),
+                x: coord_vec.first().unwrap().trim().parse().unwrap(),
                 y: coord_vec.get(1).unwrap().trim().parse().unwrap()
         };
 
@@ -43,8 +42,6 @@ fn main() -> (){
 
         largest_y = cmp::max(largest_y, point.y);
         largest_x = cmp::max(largest_x, point.x);
-
-        i += 1;
     }
 
     let unoccupied_point = Point { name: "unoccupied".to_string(), x: -1, y: -1};
@@ -56,48 +53,48 @@ fn main() -> (){
 
     let mut grid = vec![vec![unoccupied; size]; size];
 
-    for (_point_name, point) in coords_map.iter() {
+    for point in coords_map.values() {
 
         let coord_occupation = Occupation { point: point.clone(), distance_from_point: 0, can_be_occupied: false };
         grid[point.x as usize][point.y as usize] = coord_occupation;
 
-        for x in 0..size {
-            for y in 0..size {
+        for (x, row) in grid.iter_mut().enumerate() {
+            for (y, cell) in row.iter_mut().enumerate() {
 
-                if !grid[x][y].can_be_occupied {
+                if !cell.can_be_occupied {
                     // skip
                     continue;
                 }
 
                 let manhattan_distance = (point.x - x as i32).abs() + (point.y - y as i32).abs();
 
-                if grid[x][y].point.name == "unoccupied" || grid[x][y].distance_from_point > manhattan_distance {
-                    grid[x][y] = Occupation { point: point.clone(), distance_from_point: manhattan_distance, can_be_occupied: true};
+                if cell.point.name == "unoccupied" || cell.distance_from_point > manhattan_distance {
+                    *cell = Occupation { point: point.clone(), distance_from_point: manhattan_distance, can_be_occupied: true};
                 }
-                else if grid[x][y].distance_from_point == manhattan_distance {
+                else if cell.distance_from_point == manhattan_distance {
                     let equal_point = Point { name: "equal".to_string(), x: x as i32, y: y as i32};
-                    grid[x][y] = Occupation { point: equal_point.clone(), distance_from_point: manhattan_distance, can_be_occupied: true};
+                    *cell = Occupation { point: equal_point.clone(), distance_from_point: manhattan_distance, can_be_occupied: true};
                 }
             }
         }
     }
 
-    for x in 0..size {
-        for y in 0..size {
-            if let Some(total_area) = coords_area.get_mut(&grid[x][y].point.name) {
+    for (x, row) in grid.iter().enumerate() {
+        for (y, cell) in row.iter().enumerate() {
+            if let Some(total_area) = coords_area.get_mut(&cell.point.name) {
                 *total_area += 1;
             }
 
-            if x == 0 || y == 0 || x == size as usize - 1 || y == size as usize - 1 {
+            if x == 0 || y == 0 || x == size - 1 || y == size - 1 {
                 // on the border so infinite => remove
-                coords_area.remove(&grid[x][y].point.name);
+                coords_area.remove(&cell.point.name);
             }
         }
     }
 
     let mut max_area = 0;
 
-    for (_key, val) in coords_area.iter() {
+    for val in coords_area.values() {
         max_area = cmp::max(max_area, *val);
     }
 
@@ -108,7 +105,7 @@ fn main() -> (){
     for x in 0..size {
         for y in 0..size {
             let mut total_manhattan_distance = 0;
-            for (_point_name, point) in coords_map.iter() {
+            for point in coords_map.values() {
                 total_manhattan_distance += (point.x - x as i32).abs() + (point.y - y as i32).abs();
             }
 

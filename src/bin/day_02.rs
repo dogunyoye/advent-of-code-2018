@@ -3,7 +3,7 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
-fn main() -> (){
+fn main(){
     let mut twos_count = 0;
     let mut threes_count = 0;
 

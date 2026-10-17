@@ -14,7 +14,7 @@ struct Worker {
 impl Worker {
 
     fn set_step(&mut self, step: char) {
-        self.step = step.clone();
+        self.step = step;
     }
 
     fn set_work_time(&mut self, work_time: usize) {
@@ -26,7 +26,7 @@ impl Worker {
     }
 }
 
-fn main() -> (){
+fn main(){
 
     let mut dependencies_map: HashMap<char, Vec<char>> = HashMap::new();
     let mut dependencies_counter_map: HashMap<char, i32> = HashMap::new();
@@ -40,36 +40,34 @@ fn main() -> (){
         let dependency: char = chars.nth(30).unwrap();
 
         if !order.contains(&dependent) {
-            order.push_back(dependent.clone());
+            order.push_back(dependent);
         }
 
-        if !dependencies_map.contains_key(&dependent) {
-            let mut dependencies_vec = Vec::new();
-            dependencies_vec.push(dependency.clone());
-            dependencies_map.insert(dependent.clone(), dependencies_vec);
-        }
-        else {
-            if let Some(dependencies_vec) = dependencies_map.get_mut(&dependent) {
-                dependencies_vec.push(dependency.clone());
-                dependencies_vec.sort()
+        match dependencies_map.entry(dependent) {
+            std::collections::hash_map::Entry::Vacant(e) => {
+                e.insert(vec![dependency]);
+            }
+            std::collections::hash_map::Entry::Occupied(mut e) => {
+                e.get_mut().push(dependency);
+                e.get_mut().sort();
             }
         }
 
-        if !dependencies_counter_map.contains_key(&dependency) {
-            dependencies_counter_map.insert(dependency.clone(), 1);
-        }
-        else {
-            if let Some(dependency_count) = dependencies_counter_map.get_mut(&dependency) {
-                *dependency_count += 1;
+        match dependencies_counter_map.entry(dependency) {
+            std::collections::hash_map::Entry::Vacant(e) => {
+                e.insert(1);
+            }
+            std::collections::hash_map::Entry::Occupied(mut e) => {
+                *e.get_mut() += 1;
             }
         }
     }
 
     let mut vec: Vec<char> = Vec::new();
 
-    for (key, _val) in dependencies_map.iter() {
-        if let None = dependencies_counter_map.get_mut(&key) {
-            vec.push(key.clone());
+    for key in dependencies_map.keys() {
+        if dependencies_counter_map.get_mut(key).is_none() {
+            vec.push(*key);
         }
     }
 
@@ -77,20 +75,20 @@ fn main() -> (){
 
     let mut result: Vec<char> = Vec::new();
 
-    while vec.len() != 0 {
+    while !vec.is_empty() {
         let c = vec.remove(0);
         result.push(c);
 
         if let Some(list) = dependencies_map.get_mut(&c) {
             for x in list {
-                if let Some(count) = dependencies_counter_map.get_mut(&x) {
+                if let Some(count) = dependencies_counter_map.get_mut(x) {
                     *count -= 1;
                     if *count == 0 {
-                        vec.push(x.clone());
+                        vec.push(*x);
                     }
                 }
                 else {
-                    vec.push(x.clone());
+                    vec.push(*x);
                 }
             }
             vec.sort();
@@ -112,18 +110,18 @@ fn main() -> (){
     let mut completed: HashSet<char> = HashSet::new();
 
     for (key, val) in dependencies_map.iter() {
-        if let None = dependencies_counter_map.get_mut(&key) {
-            start_nodes.push(key.clone());
+        if dependencies_counter_map.get_mut(key).is_none() {
+            start_nodes.push(*key);
         }
 
         for v in val {
-            if !dependents.contains_key(v) {
-                let mut parents: Vec<char> = Vec::<char>::new();
-                parents.push(*key);
-                dependents.insert(*v, parents);
-            }
-            else {
-                dependents.get_mut(v).unwrap().push(*key)
+            match dependents.entry(*v) {
+                std::collections::hash_map::Entry::Vacant(e) => {
+                    e.insert(vec![*key]);
+                }
+                std::collections::hash_map::Entry::Occupied(mut e) => {
+                    e.get_mut().push(*key);
+                }
             }
         }
     }
@@ -152,10 +150,9 @@ fn main() -> (){
                 if e.time_left == 0 {
                     completed.insert(e.step);
                     for (k, v) in dependents.iter_mut() {
-                        let idx = v.iter().position(|&r| r == e.step);
-                        if idx.is_some() {
-                            v.remove(idx.unwrap());
-                            if v.len() == 0 {
+                        if let Some(idx) = v.iter().position(|&r| r == e.step) {
+                            v.remove(idx);
+                            if v.is_empty() {
                                 unlocked.insert(*k);
                             }
                         }
@@ -173,13 +170,12 @@ fn main() -> (){
         work_queue.sort();
 
         for e in &mut workers {
-            if e.time_left == 0 {
-                if work_queue.len() > 0 {
+            if e.time_left == 0
+                && !work_queue.is_empty() {
                     let s = work_queue.remove(0);
                     e.set_step(s);
                     e.set_work_time(60 + alphabet.iter().position(|&r| r == s).unwrap() + 1);
                 }
-            }
         }
     }
 

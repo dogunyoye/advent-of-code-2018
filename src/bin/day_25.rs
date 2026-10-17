@@ -15,7 +15,7 @@ struct Point {
     z: i32
 }
 
-fn main() -> (){
+fn main(){
     let mut points: Vec<Point> = Vec::new();
 
     for line in BufReader::new(File::open("src/data/day_25_input.txt").unwrap()).lines() {
@@ -49,12 +49,8 @@ fn main() -> (){
         }
     }
 
-    let mut set = HashSet::new();
     let result = u.into_labeling();
-
-    for i in 0..result.len() {
-        set.insert(result[i]);
-    }
+    let set: HashSet<usize> = result.into_iter().collect();
 
     println!("Part one: {}", set.len());
 }

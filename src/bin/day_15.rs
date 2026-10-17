@@ -33,34 +33,35 @@ struct Occupant {
 impl Occupant {
 
     fn enemy(&mut self) -> OccupantType {
-        return match self.occ_type {
+        match self.occ_type {
             OccupantType::Elf(_) => OccupantType::Goblin('G'),
             OccupantType::Goblin(_) => OccupantType::Elf('E'),
             _ => panic!("No corresponding enemy for: {:?}", self.occ_type)
-        };
+        }
     }
 
     fn adjacent_enemies(&mut self, arena: &HashMap<Position, Occupant>) -> Vec<Position> {
         let current_position = self.position;
-        let mut neighbours: Vec<Position> = Vec::new();
-        neighbours.push(Position{i: current_position.i - 1, j: current_position.j}); // north
-        neighbours.push(Position{i: current_position.i, j: current_position.j + 1}); // east
-        neighbours.push(Position{i: current_position.i + 1, j: current_position.j}); // south
-        neighbours.push(Position{i: current_position.i, j: current_position.j - 1}); // west
+        let mut neighbours: Vec<Position> = vec![
+            Position{i: current_position.i - 1, j: current_position.j}, // north
+            Position{i: current_position.i, j: current_position.j + 1}, // east
+            Position{i: current_position.i + 1, j: current_position.j}, // south
+            Position{i: current_position.i, j: current_position.j - 1}, // west
+        ];
 
         let enemy = self.enemy();
-        neighbours = neighbours.into_iter().filter(|p| arena.get(p).unwrap().occ_type == enemy).collect();
+        neighbours.retain(|p| arena.get(p).unwrap().occ_type == enemy);
 
-        return neighbours;
+        neighbours
     }
 
     fn move_or_attack(&mut self, arena: &mut HashMap<Position, Occupant>) -> (bool, Option<Occupant>) {
         let mut adjacent_enemies = self.adjacent_enemies(arena);
 
-        if adjacent_enemies.len() == 0 {
+        if adjacent_enemies.is_empty() {
             // no enemies ajacent, move to the closest one
             let enemies: Vec<Position> = arena.iter_mut().filter(|(_, v)| v.occ_type.unwrap_occupant() == self.enemy().unwrap_occupant()).map(|(k, _)| k).copied().collect();
-            if enemies.len() == 0 {
+            if enemies.is_empty() {
                 return (true, None);
             }
 
@@ -73,33 +74,33 @@ impl Occupant {
                     for s in start_open_adjacent_positions {
                         for o in &open_adjacent_positions {
                             let path = bfs(s, *o, self.enemy(), arena);
-                            if path.len() != 0 {
-                                paths_to_adjacent.push((path, o.clone()));
+                            if !path.is_empty() {
+                                paths_to_adjacent.push((path, *o));
                             }
                         }
                     }
-                    return paths_to_adjacent;
+                    paths_to_adjacent
                 })
                 .collect();
 
             let mut paths_to_enemies: Vec<(Position, usize, Position)> = Vec::new();
 
             for a in &paths {
-                for b in &*a {
-                    paths_to_enemies.push((*b.0.get(0).unwrap(), b.0.len() + 1, b.1.clone()));
+                for b in a {
+                    paths_to_enemies.push((*b.0.first().unwrap(), b.0.len() + 1, b.1));
                 }
             }
 
-            if paths_to_enemies.len() == 0 {
+            if paths_to_enemies.is_empty() {
                 // no path to enemy, so can't move or attack
                 return (false, None);
             }
 
-            paths_to_enemies.sort_by(|a, b| movement_sort_fn(a, b));
+            paths_to_enemies.sort_by(movement_sort_fn);
 
-            let next_pos = paths_to_enemies.get(0).unwrap().0;
-            let mut current_occupant = arena.get(&self.position).unwrap().clone();
-            let field_occupant = Occupant{id: 0, position: self.position.clone(), occ_type: OccupantType::OpenField('.'), attack_power: 0, hp: 0};
+            let next_pos = paths_to_enemies.first().unwrap().0;
+            let mut current_occupant = *arena.get(&self.position).unwrap();
+            let field_occupant = Occupant{id: 0, position: self.position, occ_type: OccupantType::OpenField('.'), attack_power: 0, hp: 0};
 
             current_occupant.position = next_pos;
             arena.insert(next_pos, current_occupant);
@@ -109,27 +110,27 @@ impl Occupant {
         }
 
         adjacent_enemies = self.adjacent_enemies(arena);
-        if adjacent_enemies.len() == 0 {
+        if adjacent_enemies.is_empty() {
             // moved but still not a position
             // adjacent to an enemy.
             return (false, None);
         }
 
         let mut enemies: Vec<Occupant> = arena.iter().filter(|(k, _)| adjacent_enemies.contains(k)).map(|(_, v)| v).copied().collect();
-        enemies.sort_by(|a, b| attack_sort_fn(a, b));
-        let mut occupant: Occupant = *enemies.get(0).unwrap();
+        enemies.sort_by(attack_sort_fn);
+        let mut occupant: Occupant = *enemies.first().unwrap();
         occupant.hp -= self.attack_power;
 
         arena.insert(occupant.position, occupant);
 
         if occupant.hp <= 0 {
-            let defeated_occupant = occupant.clone();
-            let field_occupant = Occupant{id: 0, position: occupant.position.clone(), occ_type: OccupantType::OpenField('.'), attack_power: 0, hp: 0};
-            arena.insert(occupant.position.clone(), field_occupant);
+            let defeated_occupant = occupant;
+            let field_occupant = Occupant{id: 0, position: occupant.position, occ_type: OccupantType::OpenField('.'), attack_power: 0, hp: 0};
+            arena.insert(occupant.position, field_occupant);
             return (false, Some(defeated_occupant));
         }
 
-        return (false, None);
+        (false, None)
 
     }
 }
@@ -159,7 +160,7 @@ fn print_arena(arena: &HashMap<Position, Occupant>) {
 
 #[allow(unused)]
 fn print_combatants(arena: &HashMap<Position, Occupant>) {
-    for (_, v) in arena {
+    for v in arena.values() {
         let occ_type = v.occ_type.unwrap_occupant();
         if occ_type == 'G' || occ_type == 'E' {
             println!("{:?}", v);
@@ -178,14 +179,14 @@ fn open_adjacent_positions(enemy_position: Position, arena: &mut HashMap<Positio
         }
     }
 
-    return free;
+    free
 }
 
 #[allow(unused)]
 // Breadth First Search to find all paths from start to end
 // unused as it works for the part 1 example cases, but not the actual input (memory blows up)
 fn bfs_all_paths(start: Position, end: Position, enemy: OccupantType, arena: &mut HashMap<Position, Occupant>) -> Vec<Vec<Position>> {
-    if open_adjacent_positions(end, arena).len() == 0 {
+    if open_adjacent_positions(end, arena).is_empty() {
         // if there is no free space next
         // to the enemy, there is no path
         return vec![];
@@ -197,7 +198,7 @@ fn bfs_all_paths(start: Position, end: Position, enemy: OccupantType, arena: &mu
 
     queue.push_back((start, vec![start]));
 
-    while queue.len() != 0 {
+    while !queue.is_empty() {
         let node = queue.pop_front().unwrap();
         let current_position = node.0;
         let current_path = node.1;
@@ -229,7 +230,7 @@ fn bfs_all_paths(start: Position, end: Position, enemy: OccupantType, arena: &mu
         }
     }
 
-    return paths;
+    paths
 }
 
 fn bfs(start: Position, end: Position, enemy: OccupantType, arena: &mut HashMap<Position, Occupant>) -> Vec<Position> {
@@ -239,7 +240,7 @@ fn bfs(start: Position, end: Position, enemy: OccupantType, arena: &mut HashMap<
     queue.push_back((start, vec![start]));
     visited.insert(start);
 
-    while queue.len() != 0 {
+    while !queue.is_empty() {
         let (current_position, current_path) = queue.pop_front().unwrap();
 
         if current_position == end {
@@ -264,7 +265,7 @@ fn bfs(start: Position, end: Position, enemy: OccupantType, arena: &mut HashMap<
     }
 
     // no path to end position
-    return vec![];
+    vec![]
 }
 
 fn position_sort_fn(a: &Position, b: &Position) -> Ordering {
@@ -274,7 +275,7 @@ fn position_sort_fn(a: &Position, b: &Position) -> Ordering {
     if a.j > b.j { return Ordering::Greater; }
     if a.j < b.j { return Ordering::Less; }
 
-    return Ordering::Equal;
+    Ordering::Equal
 }
 
 fn movement_sort_fn(a: &(Position, usize, Position), b: &(Position, usize, Position)) -> Ordering {
@@ -286,34 +287,33 @@ fn movement_sort_fn(a: &(Position, usize, Position), b: &(Position, usize, Posit
         return position_sort_fn(&a.0, &b.0);
     }
 
-    return ordering;
+    ordering
 }
 
 fn attack_sort_fn(a: &Occupant, b: &Occupant) -> Ordering {
     if a.hp > b.hp { return Ordering::Greater }
     if a.hp < b.hp { return Ordering::Less }
 
-    return position_sort_fn(&a.position, &b.position);
+    position_sort_fn(&a.position, &b.position)
 }
 
 fn find_elves_and_goblins(arena: &HashMap<Position, Occupant>) -> Vec<(Position, Occupant)> {
     let mut occupants: Vec<(Position, Occupant)> = Vec::new();
     for (key, value) in arena {
         match value.occ_type {
-            OccupantType::Elf(_) | OccupantType::Goblin(_) => occupants.push((key.clone(), value.clone())),
+            OccupantType::Elf(_) | OccupantType::Goblin(_) => occupants.push((*key, *value)),
             OccupantType::OpenField(_) | OccupantType::Wall(_) => { /* no-op */ },
         }
     }
     occupants.sort_by(|a, b| position_sort_fn(&a.0, &b.0));
-    return occupants;
+    occupants
 }
 
 fn build_arena() -> HashMap<Position, Occupant> {
     let mut arena: HashMap<Position, Occupant> = HashMap::new();
-    let mut i: usize = 0;
     let mut id: usize = 0;
 
-    for line in BufReader::new(File::open("src/data/day_15_input.txt").unwrap()).lines() {
+    for (i, line) in BufReader::new(File::open("src/data/day_15_input.txt").unwrap()).lines().enumerate() {
         let row = line.unwrap();
         for j in 0..row.len() {
             let pos = Position{i: i as i32, j: j as i32};
@@ -339,22 +339,20 @@ fn build_arena() -> HashMap<Position, Occupant> {
                 }
             }
         }
-
-        i += 1;
     }
 
-    return arena;
+    arena
 }
 
 fn combat_terminated(arena: &HashMap<Position, Occupant>) -> bool {
-    let elves: Vec<Occupant> = arena.values().into_iter().filter(|o| o.occ_type.unwrap_occupant() == 'E').copied().collect();
-    let goblins: Vec<Occupant> = arena.values().into_iter().filter(|o| o.occ_type.unwrap_occupant() == 'G').copied().collect();
-    return elves.len() == 0 || goblins.len() == 0;
+    let elves: Vec<Occupant> = arena.values().filter(|o| o.occ_type.unwrap_occupant() == 'E').copied().collect();
+    let goblins: Vec<Occupant> = arena.values().filter(|o| o.occ_type.unwrap_occupant() == 'G').copied().collect();
+    elves.is_empty() || goblins.is_empty()
 }
 
 fn enhance_elf_attack_power(attack_power: i32, mut arena: HashMap<Position, Occupant>) -> HashMap<Position, Occupant> {
     arena.values_mut().for_each(|o| { if o.occ_type.unwrap_occupant() == 'E' { o.attack_power = attack_power; }});
-    return arena;
+    arena
 }
 
 // TODO - Profile and optimise
@@ -370,13 +368,11 @@ fn find_outcome_of_battle(mut arena: HashMap<Position, Occupant>, part_2: bool) 
             if !killed.contains(&combatant.id) {
                 let (combat_ended, defeated_combatant) = combatant.move_or_attack(arena.borrow_mut());
 
-                if defeated_combatant.is_some() {
-                    let defeated = defeated_combatant.unwrap();
-                    if part_2 {
-                        if defeated.occ_type.unwrap_occupant() == 'E' {
+                if let Some(defeated) = defeated_combatant {
+                    if part_2
+                        && defeated.occ_type.unwrap_occupant() == 'E' {
                             return None;
                         }
-                    }
 
                     killed.insert(defeated.id);
                 }
@@ -402,7 +398,7 @@ fn find_outcome_of_battle(mut arena: HashMap<Position, Occupant>, part_2: bool) 
         .map(|o| o.hp)
         .sum();
 
-    return Some(remaining_hp * rounds);
+    Some(remaining_hp * rounds)
 }
 
 fn find_outcome_of_battle_with_enhanced_elves(arena: HashMap<Position, Occupant>, part_2: bool) -> i32 {
@@ -410,15 +406,15 @@ fn find_outcome_of_battle_with_enhanced_elves(arena: HashMap<Position, Occupant>
     loop {
         let arena_copy = enhance_elf_attack_power(attack_power, arena.clone());
         let outcome = find_outcome_of_battle(arena_copy, part_2);
-        if outcome.is_some() {
-            return outcome.unwrap();
+        if let Some(outcome) = outcome {
+            return outcome;
         }
 
         attack_power += 1;
     }
 }
 
-fn main() -> (){
+fn main(){
     println!("Part 1: {}", find_outcome_of_battle(build_arena(), false).unwrap());
     println!("Part 2: {}", find_outcome_of_battle_with_enhanced_elves(build_arena(), true));
 }

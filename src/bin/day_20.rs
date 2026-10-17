@@ -66,8 +66,8 @@ fn dfs(map: &HashMap<Position, char>, part_2: bool) -> usize {
 
     stack.push((start, steps));
 
-    while stack.len() != 0 {
-        let (current_position, current_steps) = stack.pop().unwrap();
+    while let Some((current_position, current_steps)) = stack.pop() {
+        
 
         if !visited.contains(&current_position) {
             visited.insert(current_position);
@@ -103,7 +103,7 @@ fn dfs(map: &HashMap<Position, char>, part_2: bool) -> usize {
         return rooms_count;
     }
 
-    return max_steps;
+    max_steps
 }
 
 fn explore_map() -> HashMap<Position, char> {
@@ -121,10 +121,10 @@ fn explore_map() -> HashMap<Position, char> {
     for c in regex.chars() {
         match c {
             '(' => {
-                stack.push(position.clone());
+                stack.push(position);
             },
             '|' => {
-                position = stack.get(stack.len() - 1).unwrap().clone();
+                position = *stack.last().unwrap();
             },
             ')' => {
                 position = stack.pop().unwrap();
@@ -136,18 +136,18 @@ fn explore_map() -> HashMap<Position, char> {
     }
 
     map.insert(Position{i: 0, j: 0}, '.');
-    return map;
+    map
 }
 
 fn find_largest_number_of_door_to_reach_a_room() -> usize {
-    return dfs(&explore_map(), false);
+    dfs(&explore_map(), false)
 }
 
 fn find_number_of_rooms_passing_through_at_least_1000_doors() -> usize {
-    return dfs(&explore_map(), true);
+    dfs(&explore_map(), true)
 }
 
-fn main() -> (){
+fn main(){
     println!("Part 1: {}", find_largest_number_of_door_to_reach_a_room());
     println!("Part 2: {}", find_number_of_rooms_passing_through_at_least_1000_doors());
 }

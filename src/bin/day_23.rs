@@ -51,7 +51,7 @@ struct Cube {
 impl Cube {
 
     fn is_unit_cube(&mut self) -> bool {
-        return ((self.max_x - self.min_x) <= 1) && ((self.max_y - self.min_y) <= 1) && ((self.max_z - self.min_z) <= 1)
+        ((self.max_x - self.min_x) <= 1) && ((self.max_y - self.min_y) <= 1) && ((self.max_z - self.min_z) <= 1)
     }
 
     fn split(&mut self) -> Vec<Cube> {
@@ -68,27 +68,27 @@ impl Cube {
         let c6 = build_cube(vec![middle_x, self.max_x, self.min_y, middle_y, middle_z, self.max_z]);
         let c7 = build_cube(vec![middle_x, self.max_x, middle_y, self.max_y, middle_z, self.max_z]);
 
-        return vec![c0, c1, c2, c3, c4, c5, c6, c7];
+        vec![c0, c1, c2, c3, c4, c5, c6, c7]
     }
 
     fn corners(&mut self) -> Vec<(i32, i32, i32)> {
         let mut corners: Vec<(i32, i32, i32)> = Vec::new();
-        for x in vec![self.min_x, self.max_x] {
-            for y in vec![self.min_y, self.max_y] {
-                for z in vec![self.min_z, self.max_z] {
+        for x in [self.min_x, self.max_x] {
+            for y in [self.min_y, self.max_y] {
+                for z in [self.min_z, self.max_z] {
                     corners.push((x, y, z));
                 }
             }
         }
-        return corners;
+        corners
     }
 }
 
 fn manhattan_distance(a: (i32, i32, i32), b: (i32, i32, i32)) -> usize {
-    return ((a.0 - b.0).abs() + (a.1 - b.1).abs() + (a.2 - b.2).abs()) as usize;
+    ((a.0 - b.0).abs() + (a.1 - b.1).abs() + (a.2 - b.2).abs()) as usize
 }
 
-fn nanobots_in_range_of_cube(nanobots: &Vec<Nanobot>, mut cube: Cube) -> usize {
+fn nanobots_in_range_of_cube(nanobots: &[Nanobot], mut cube: Cube) -> usize {
     let mut bots_in_range: usize = 0;
     for nanobot in nanobots {
         let nanobot_position = (nanobot.x, nanobot.y, nanobot.z);
@@ -99,10 +99,10 @@ fn nanobots_in_range_of_cube(nanobots: &Vec<Nanobot>, mut cube: Cube) -> usize {
             }
         }
     }
-    return bots_in_range;
+    bots_in_range
 }
 
-fn nanobots_in_range_of_point(nanobots: &Vec<Nanobot>, point: (i32, i32, i32)) -> usize {
+fn nanobots_in_range_of_point(nanobots: &[Nanobot], point: (i32, i32, i32)) -> usize {
     let mut bots_in_range: usize = 0;
     for nanobot in nanobots {
         let nanobot_position = (nanobot.x, nanobot.y, nanobot.z);
@@ -110,7 +110,7 @@ fn nanobots_in_range_of_point(nanobots: &Vec<Nanobot>, point: (i32, i32, i32)) -
             bots_in_range += 1;
         }
     }
-    return bots_in_range;
+    bots_in_range
 }
 
 fn build_cube(bounds: Vec<i32>) -> Cube {
@@ -122,9 +122,9 @@ fn build_cube(bounds: Vec<i32>) -> Cube {
     let max_z = bounds[5];
 
     let mut corners: Vec<(i32, i32, i32)> = Vec::new();
-    for x in vec![min_x, max_x] {
-        for y in vec![min_y, max_y] {
-            for z in vec![min_z, max_z] {
+    for x in [min_x, max_x] {
+        for y in [min_y, max_y] {
+            for z in [min_z, max_z] {
                 corners.push((x, y, z));
             }
         }
@@ -136,20 +136,21 @@ fn build_cube(bounds: Vec<i32>) -> Cube {
 
     let centre = (centre_x, centre_y, centre_z);
 
-    return Cube{min_x, max_x, min_y, max_y, min_z, max_z, centre};
+    Cube{min_x, max_x, min_y, max_y, min_z, max_z, centre}
 
 }
 
-fn build_bounding_box(nanobots: &Vec<Nanobot>) -> Cube {
-    let mut bounds: Vec<i32> = Vec::new();
-    bounds.push(nanobots.iter().map(|n| n.x).min().unwrap());
-    bounds.push(nanobots.iter().map(|n| n.x).max().unwrap());
-    bounds.push(nanobots.iter().map(|n| n.y).min().unwrap());
-    bounds.push(nanobots.iter().map(|n| n.y).max().unwrap());
-    bounds.push(nanobots.iter().map(|n| n.z).min().unwrap());
-    bounds.push(nanobots.iter().map(|n| n.z).max().unwrap());
+fn build_bounding_box(nanobots: &[Nanobot]) -> Cube {
+    let bounds: Vec<i32> = vec![
+        nanobots.iter().map(|n| n.x).min().unwrap(),
+        nanobots.iter().map(|n| n.x).max().unwrap(),
+        nanobots.iter().map(|n| n.y).min().unwrap(),
+        nanobots.iter().map(|n| n.y).max().unwrap(),
+        nanobots.iter().map(|n| n.z).min().unwrap(),
+        nanobots.iter().map(|n| n.z).max().unwrap(),
+    ];
 
-    return build_cube(bounds);
+    build_cube(bounds)
 }
 
 fn build_nanobots() -> (Vec<Nanobot>, Nanobot) {
@@ -181,7 +182,7 @@ fn build_nanobots() -> (Vec<Nanobot>, Nanobot) {
         }
     }
 
-    return (nanobots, largest_radius_nanobot);
+    (nanobots, largest_radius_nanobot)
 }
 
 fn calculate_nanobots_in_range_of_largest() -> i32 {
@@ -195,17 +196,17 @@ fn calculate_nanobots_in_range_of_largest() -> i32 {
         }
     }
 
-    return in_range; 
+    in_range
 }
 
-fn octree_scan(cube: Cube, nanobots: &Vec<Nanobot>) -> usize {
+fn octree_scan(cube: Cube, nanobots: &[Nanobot]) -> usize {
     let mut most_nanobots_in_range = usize::MIN;
     let mut shortest_distance_from_origin = usize::MAX;
 
     let mut pq: BinaryHeap<CubeState> = BinaryHeap::new();
     pq.push(CubeState{cube, bots_in_range: nanobots.len(), distance_to_start: manhattan_distance(cube.centre, (0, 0, 0))});
 
-    while pq.len() != 0 {
+    while !pq.is_empty() {
         let current_cube_state = pq.pop().unwrap();
         let mut current_cube = current_cube_state.cube;
         
@@ -236,16 +237,16 @@ fn octree_scan(cube: Cube, nanobots: &Vec<Nanobot>) -> usize {
         }
     }
 
-    return shortest_distance_from_origin;
+    shortest_distance_from_origin
 }
 
 fn find_shortest_manhattan_distance_between_point_in_range_of_most_nanobots() -> usize {
     let (nanobots, _) = build_nanobots();
     let bounding_box = build_bounding_box(&nanobots);
-    return octree_scan(bounding_box, &nanobots);
+    octree_scan(bounding_box, &nanobots)
 }
 
-fn main() -> (){
+fn main(){
     println!("Part one: {}", calculate_nanobots_in_range_of_largest());
     println!("Part two: {}", find_shortest_manhattan_distance_between_point_in_range_of_most_nanobots());
 }

@@ -11,19 +11,19 @@ use regex::Regex;
 
 #[derive(Debug, Clone, PartialEq)]
 enum AttackType {
-    UNKNOWN,
-    RADIATION,
-    BLUDGEONING,
-    FIRE,
-    SLASHING,
-    COLD
+    Unknown,
+    Radiation,
+    Bludgeoning,
+    Fire,
+    Slashing,
+    Cold
 }
 
 #[derive(Debug, Clone, PartialEq)]
 enum GroupType {
-    UNKNOWN,
-    IMMUNE,
-    INFECTION
+    Unknown,
+    Immune,
+    Infection
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -47,12 +47,12 @@ impl FightingGroup {
 
 fn convert_to_attack_type(attack_str: &str) -> AttackType {
     match attack_str.trim() {
-        "radiation" => return AttackType::RADIATION,
-        "bludgeoning" => return AttackType::BLUDGEONING,
-        "fire" => return AttackType::FIRE,
-        "slashing" => return AttackType::SLASHING,
-        "cold" => return AttackType::COLD,
-        _ => return AttackType::UNKNOWN
+        "radiation" => AttackType::Radiation,
+        "bludgeoning" => AttackType::Bludgeoning,
+        "fire" => AttackType::Fire,
+        "slashing" => AttackType::Slashing,
+        "cold" => AttackType::Cold,
+        _ => AttackType::Unknown
     }
 }
 
@@ -88,16 +88,16 @@ fn parse_fighting_group(line: &str, group_type: &GroupType) -> Option<FightingGr
             group_type: group_type.clone(),
             num_of_units: caps["units"].parse().unwrap(),
             hit_points: caps["hp"].parse().unwrap(),
-            weaknesses: weaknesses,
-            immunities: immunities,
-            attack_type: convert_to_attack_type(&caps["damage_type"].to_string()),
+            weaknesses,
+            immunities,
+            attack_type: convert_to_attack_type(&caps["damage_type"]),
             attack_points: caps["damage"].parse().unwrap(),
             effective_power: 0,
             initiative: caps["initiative"].parse().unwrap(),
         });
     }
 
-    return Option::None
+    Option::None
 }
 
 fn battle(mut fighting_groups: Vec<FightingGroup>) -> (GroupType, u32) {
@@ -123,12 +123,12 @@ fn battle(mut fighting_groups: Vec<FightingGroup>) -> (GroupType, u32) {
             let fighter_dmg = attacker.effective_power;
 
             let default = FightingGroup {
-                group_type: GroupType::UNKNOWN,
+                group_type: GroupType::Unknown,
                 num_of_units: 0,
                 hit_points: 0,
                 weaknesses: vec![],
                 immunities: vec![],
-                attack_type: AttackType::UNKNOWN,
+                attack_type: AttackType::Unknown,
                 attack_points: 0,
                 effective_power: 0,
                 initiative: 0
@@ -144,12 +144,7 @@ fn battle(mut fighting_groups: Vec<FightingGroup>) -> (GroupType, u32) {
 
                 // check pending attacks to see if the target (defender) has already
                 // been selected
-                let mut already_selected = false;
-                for x in 0..pending_attacks.len() {
-                    if pending_attacks[x].3 == *defender {
-                        already_selected = true;
-                    }
-                }
+                let already_selected = pending_attacks.iter().any(|attack| attack.3 == *defender);
 
                 if already_selected {
                     // skip iteration, find another target
@@ -243,7 +238,7 @@ fn battle(mut fighting_groups: Vec<FightingGroup>) -> (GroupType, u32) {
         }
 
         // get rid of the groups with no fighters
-        fighting_groups.retain(|ref i|i.num_of_units > 0 );
+        fighting_groups.retain(|i|i.num_of_units > 0 );
 
         let mut all_same_type = false;
         for x in 0..fighting_groups.len() {
@@ -269,10 +264,10 @@ fn battle(mut fighting_groups: Vec<FightingGroup>) -> (GroupType, u32) {
     }
 
     let mut total = 0;
-    let mut winning_type: GroupType = GroupType::UNKNOWN;
+    let mut winning_type: GroupType = GroupType::Unknown;
 
     if stalemate {
-        return (GroupType::UNKNOWN, total);
+        return (GroupType::Unknown, total);
     }
 
     for group in fighting_groups {
@@ -283,9 +278,9 @@ fn battle(mut fighting_groups: Vec<FightingGroup>) -> (GroupType, u32) {
     (winning_type, total)
 }
 
-fn main() -> () {
+fn main() {
     let mut fighting_groups: Vec<FightingGroup> = Vec::new();
-    let mut group_type = GroupType::IMMUNE;
+    let mut group_type = GroupType::Immune;
  
     for line in BufReader::new(File::open("src/data/day_24_input.txt").unwrap()).lines() {
         let line = line.unwrap();
@@ -294,10 +289,10 @@ fn main() -> () {
         }
 
         if line.starts_with("Immune System:") {
-            group_type = GroupType::IMMUNE;
+            group_type = GroupType::Immune;
             continue;
         } else if line.starts_with("Infection:") {
-            group_type = GroupType::INFECTION;
+            group_type = GroupType::Infection;
             continue;
         }
 
@@ -322,7 +317,7 @@ fn main() -> () {
         }
 
         let result = battle(immune_boosted_fighters);
-        if result.0 == GroupType::IMMUNE {
+        if result.0 == GroupType::Immune {
             println!("Part two: {:?}", result.1);
             break;
         }
